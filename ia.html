@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<!-- informa que o arquivo usa HTML5 -->
+
+<html lang="pt-BR">
+<!-- define o idioma como português do Brasil -->
+
+<head>
+  <meta charset="UTF-8">
+  <!-- permite acentos -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- deixa responsivo no celular -->
+
+  <title>IA de Looks - SwagWear</title>
+  <!-- nome da aba -->
+
+  <link rel="stylesheet" href="style.css">
+  <!-- conecta com o CSS principal -->
+</head>
+
+<body>
+
+  <header class="navbar">
+    <!-- navbar igual ao resto do site -->
+
+    <h2>SWAGWEAR</h2>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="loja.html">Loja</a>
+      <a href="ia.html">IA Looks</a>
+      <a href="cadastro.html">Conta</a>
+    </nav>
+  </header>
+
+  <section class="ia-page">
+    <!-- área principal da IA -->
+
+    <div class="ia-box">
+      <!-- caixa central -->
+
+      <p class="ia-tag">SWAGWEAR AI</p>
+
+      <h1>Monte seu look com IA</h1>
+
+      <p class="ia-sub">
+        Escolha sua vibe e receba uma combinação streetwear da SwagWear.
+      </p>
+
+      <form id="formIA">
+        <!-- formulário da IA -->
+
+        <select id="estilo" required>
+          <option value="">Escolha o estilo</option>
+          <option value="streetwear">Streetwear</option>
+          <option value="dev">Dev</option>
+          <option value="cristao">Cristão</option>
+          <option value="minimalista">Minimalista</option>
+        </select>
+
+        <select id="ocasiao" required>
+          <option value="">Escolha a ocasião</option>
+          <option value="escola">Escola</option>
+          <option value="role">Rolê</option>
+          <option value="igreja">Igreja</option>
+          <option value="evento">Evento</option>
+        </select>
+
+        <select id="cor" required>
+          <option value="">Cor principal</option>
+          <option value="preto">Preto</option>
+          <option value="branco">Branco</option>
+          <option value="roxo">Roxo</option>
+          <option value="bege">Bege</option>
+        </select>
+
+        <button type="submit">Gerar look</button>
+      </form>
+
+      <div id="resultadoIA" class="resultado-ia">
+        <!-- o resultado aparece aqui -->
+        <h2>Seu look aparecerá aqui</h2>
+        <p>Preencha as opções acima para a IA montar uma combinação.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <script>
+    /* pega o formulário da IA */
+    const formIA = document.getElementById("formIA");
+
+    /* pega a caixa onde o resultado vai aparecer */
+    const resultadoIA = document.getElementById("resultadoIA");
+
+    /* escuta quando o usuário clicar em gerar look */
+    formIA.addEventListener("submit", function(event) {
+      event.preventDefault();
+      /* impede a página de recarregar */
+
+      const estilo = document.getElementById("estilo").value;
+      /* pega o estilo escolhido */
+
+      const ocasiao = document.getElementById("ocasiao").value;
+      /* pega a ocasião escolhida */
+
+      const cor = document.getElementById("cor").value;
+      /* pega a cor escolhida */
+
+      let blusa = "";
+      let calca = "";
+      let frase = "";
+
+      /* regra para estilo dev */
+      if (estilo === "dev") {
+        blusa = "Neon Code Tee";
+        calca = "Future Cargo Black";
+        frase = "Um visual tech, urbano e com identidade de programador.";
+      }
+
+      /* regra para streetwear */
+      else if (estilo === "streetwear") {
+        blusa = "Oversized Shadow Tee";
+        calca = "Baggy Void Pants";
+        frase = "Look pesado, moderno e com presença de rua.";
+      }
+
+      /* regra para cristão */
+      else if (estilo === "cristao") {
+        blusa = "Faith Oversized Tee";
+        calca = "Core Minimal Pants";
+        frase = "Visual limpo, forte e com mensagem de fé.";
+      }
+
+      /* regra para minimalista */
+      else {
+        blusa = "Raw Sand Tee";
+        calca = "Steel Motion Pants";
+        frase = "Combinação simples, elegante e fácil de usar.";
+      }
+
+      resultadoIA.innerHTML = `
+        <h2>Look recomendado</h2>
+        <p><strong>Blusa:</strong> ${blusa}</p>
+        <p><strong>Calça:</strong> ${calca}</p>
+        <p><strong>Cor principal:</strong> ${cor}</p>
+        <p><strong>Ocasião:</strong> ${ocasiao}</p>
+        <p>${frase}</p>
+      `;
+      /* joga o resultado dentro da tela */
+    });
+  </script>
+
+</body>
+</html>

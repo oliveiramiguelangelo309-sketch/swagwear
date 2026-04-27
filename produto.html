@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <!-- permite acentos e caracteres especiais -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- ajuda o site a ficar bom no celular -->
+
+  <title>Produto - SwagWear</title>
+  <!-- nome da aba do navegador -->
+
+  <link rel="stylesheet" href="style.css">
+  <!-- conecta com o CSS principal do projeto -->
+</head>
+
+<body>
+
+  <header class="navbar">
+    <!-- navbar do topo -->
+
+    <h2>SWAGWEAR</h2>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <!-- volta para a home -->
+
+      <a href="loja.html">Loja</a>
+      <!-- vai para a loja -->
+
+      <a href="entrar.html">Entrar</a>
+      <!-- vai para login -->
+
+      <a href="cadastro.html">Conta</a>
+      <!-- vai para cadastro/conta -->
+    </nav>
+  </header>
+
+  <section class="produto-page">
+    <!-- seção principal da página do produto -->
+
+    <div class="produto-imagem-box">
+      <!-- lado esquerdo: imagem grande do produto -->
+
+      <img id="produtoImagem" src="" alt="Produto selecionado">
+      <!-- a imagem será preenchida pelo JavaScript -->
+    </div>
+
+    <div class="produto-detalhes">
+      <!-- lado direito: informações do produto -->
+
+      <p class="produto-tag">SWAGWEAR DROP</p>
+      <!-- etiqueta pequena acima do nome -->
+
+      <h1 id="produtoNome">Nome do Produto</h1>
+      <!-- nome do produto -->
+
+      <p id="produtoPreco" class="produto-preco">R$ 0</p>
+      <!-- preço do produto -->
+
+      <p class="produto-descricao">
+        <!-- descrição fixa por enquanto -->
+        Peça com estética streetwear contemporânea, caimento forte e presença visual marcante.
+        Ideal para compor looks urbanos, modernos e autênticos.
+      </p>
+
+      <div class="produto-tamanhos">
+        <!-- bloco dos tamanhos -->
+
+        <h3>Tamanhos</h3>
+
+        <div class="tamanhos-lista">
+          <!-- botões de tamanho -->
+
+          <button type="button" class="tamanho-btn">P</button>
+          <!-- tamanho P -->
+
+          <button type="button" class="tamanho-btn">M</button>
+          <!-- tamanho M -->
+
+          <button type="button" class="tamanho-btn">G</button>
+          <!-- tamanho G -->
+
+          <button type="button" class="tamanho-btn">GG</button>
+          <!-- tamanho GG -->
+        </div>
+      </div>
+
+      <a id="btnComprar" class="btn-comprar" href="#">
+        Comprar agora
+      </a>
+      <!-- botão que vai levar para pagamento.html com os mesmos dados -->
+
+      <button id="btnCarrinho" class="btn-carrinho" type="button">
+        Adicionar ao carrinho
+      </button>
+      <!-- botão que salva o produto no carrinho -->
+    </div>
+  </section>
+
+  <section class="produto-info-extra">
+    <!-- seção inferior com especificações e guia -->
+
+    <div class="info-extra-box">
+      <h2>Especificações</h2>
+
+      <ul class="lista-info">
+        <li>Modelagem: oversized / streetwear</li>
+        <li>Tecido: algodão premium</li>
+        <li>Estilo: urbano contemporâneo</li>
+        <li>Indicação: uso casual, rolê, lifestyle</li>
+      </ul>
+    </div>
+
+    <div class="info-extra-box">
+      <h2>Guia de Tamanhos</h2>
+
+      <ul class="lista-info">
+        <li>P → caimento mais ajustado</li>
+        <li>M → equilíbrio entre conforto e estilo</li>
+        <li>G → visual mais solto</li>
+        <li>GG → oversized forte</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="relacionados">
+    <!-- seção de produtos parecidos -->
+
+    <div class="titulo-linha">
+      <!-- título + setas do carrossel -->
+
+      <div>
+        <h2>Você também pode curtir</h2>
+        <p>Mais peças no estilo da SwagWear</p>
+      </div>
+
+      <div class="botoes-carrossel">
+        <button class="seta" onclick="rolarRelacionadosEsquerda()">←</button>
+        <!-- move o carrossel pra esquerda -->
+
+        <button class="seta" onclick="rolarRelacionadosDireita()">→</button>
+        <!-- move o carrossel pra direita -->
+      </div>
+    </div>
+
+    <div class="carrossel-wrapper">
+      <!-- área visível do carrossel -->
+
+      <div class="carrossel" id="carrosselRelacionados">
+        <!-- trilho que vai deslizar -->
+
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80" alt="Hoodie Urban Grey">
+
+          <div class="info">
+            <span class="categoria">Blusa</span>
+            <h3>Urban Grey Hoodie</h3>
+            <p>R$ 229</p>
+
+            <a
+              class="btn-card"
+              href="produto.html?nome=Urban%20Grey%20Hoodie&preco=229&imagem=https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format%26fit=crop%26w=800%26q=80"
+            >
+              Ver mais
+            </a>
+          </div>
+        </div>
+
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80" alt="Baggy Void Pants">
+
+          <div class="info">
+            <span class="categoria">Calça</span>
+            <h3>Baggy Void Pants</h3>
+            <p>R$ 199</p>
+
+            <a
+              class="btn-card"
+              href="produto.html?nome=Baggy%20Void%20Pants&preco=199&imagem=https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format%26fit=crop%26w=800%26q=80"
+            >
+              Ver mais
+            </a>
+          </div>
+        </div>
+
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80" alt="Neon Code Tee">
+
+          <div class="info">
+            <span class="categoria">Blusa</span>
+            <h3>Neon Code Tee</h3>
+            <p>R$ 129</p>
+
+            <a
+              class="btn-card"
+              href="produto.html?nome=Neon%20Code%20Tee&preco=129&imagem=https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format%26fit=crop%26w=800%26q=80"
+            >
+              Ver mais
+            </a>
+          </div>
+        </div>
+
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format&fit=crop&w=800&q=80" alt="Future Cargo Black">
+
+          <div class="info">
+            <span class="categoria">Calça</span>
+            <h3>Future Cargo Black</h3>
+            <p>R$ 229</p>
+
+            <a
+              class="btn-card"
+              href="produto.html?nome=Future%20Cargo%20Black&preco=229&imagem=https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format%26fit=crop%26w=800%26q=80"
+            >
+              Ver mais
+            </a>
+          </div>
+        </div>
+
+        <div class="card">
+          <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&q=80" alt="Raw Sand Tee">
+
+          <div class="info">
+            <span class="categoria">Blusa</span>
+            <h3>Raw Sand Tee</h3>
+            <p>R$ 99</p>
+
+            <a
+              class="btn-card"
+              href="produto.html?nome=Raw%20Sand%20Tee&preco=99&imagem=https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format%26fit=crop%26w=800%26q=80"
+            >
+              Ver mais
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /* ================= DADOS DO PRODUTO ================= */
+
+    const params = new URLSearchParams(window.location.search);
+    /* pega tudo o que veio depois do ? na URL */
+
+    const nome = params.get("nome");
+    /* pega o nome do produto */
+
+    const preco = params.get("preco");
+    /* pega o preço do produto */
+
+    const imagem = params.get("imagem");
+    /* pega a imagem do produto */
+
+    document.getElementById("produtoNome").textContent = nome || "Produto SwagWear";
+    /* coloca o nome na tela */
+
+    document.getElementById("produtoPreco").textContent = preco ? `R$ ${preco}` : "R$ 0";
+    /* coloca o preço na tela */
+
+    document.getElementById("produtoImagem").src = imagem || "";
+    /* coloca a imagem na tela */
+
+    /* ================= BOTÃO COMPRAR ================= */
+
+    const btnComprar = document.getElementById("btnComprar");
+    /* pega o botão comprar */
+
+    btnComprar.href =
+      `pagamento.html?nome=${encodeURIComponent(nome || "Produto SwagWear")}` +
+      `&preco=${encodeURIComponent(preco || "0")}` +
+      `&imagem=${encodeURIComponent(imagem || "")}`;
+    /* monta o link para a página de pagamento com os mesmos dados */
+
+    /* ================= BOTÃO CARRINHO ================= */
+
+    const btnCarrinho = document.getElementById("btnCarrinho");
+    /* pega o botão adicionar ao carrinho */
+
+    btnCarrinho.addEventListener("click", function () {
+      /* quando clicar, começa a lógica do carrinho */
+
+      const produto = {
+        nome: nome || "Produto SwagWear",
+        preco: preco || "0",
+        imagem: imagem || "",
+        quantidade: 1
+      };
+      /* cria um objeto com os dados do produto atual */
+
+      let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+      /* tenta pegar o carrinho salvo no navegador
+         se não existir nada, usa um array vazio */
+
+      const produtoExistente = carrinho.find(item => item.nome === produto.nome);
+      /* procura se esse produto já existe no carrinho */
+
+      if (produtoExistente) {
+        produtoExistente.quantidade += 1;
+        /* se já existir, só aumenta a quantidade */
+      } else {
+        carrinho.push(produto);
+        /* se não existir, adiciona o produto ao carrinho */
+      }
+
+      localStorage.setItem("carrinho", JSON.stringify(carrinho));
+      /* salva o carrinho atualizado no navegador */
+
+      alert("Produto adicionado ao carrinho!");
+      /* mostra um aviso simples confirmando */
+    });
+
+    /* ================= CARROSSEL RELACIONADOS ================= */
+
+    const carrosselRelacionados = document.getElementById("carrosselRelacionados");
+    /* pega o carrossel horizontal */
+
+    function animarScrollRelacionados(distancia) {
+      const inicio = carrosselRelacionados.scrollLeft;
+      /* pega a posição inicial do carrossel */
+
+      const duracao = 500;
+      /* define o tempo da animação */
+
+      let startTime = null;
+      /* guarda o tempo em que a animação começou */
+
+      function animacao(currentTime) {
+        if (!startTime) startTime = currentTime;
+        /* se ainda não começou, define o começo */
+
+        const tempoPassado = currentTime - startTime;
+        /* calcula quanto tempo já passou */
+
+        const progresso = Math.min(tempoPassado / duracao, 1);
+        /* transforma em valor de 0 a 1 */
+
+        const ease = 1 - Math.pow(1 - progresso, 3);
+        /* cria uma desaceleração suave no final */
+
+        carrosselRelacionados.scrollLeft = inicio + distancia * ease;
+        /* move o carrossel */
+
+        if (tempoPassado < duracao) {
+          requestAnimationFrame(animacao);
+          /* continua a animação até terminar */
+        }
+      }
+
+      requestAnimationFrame(animacao);
+      /* inicia a animação */
+    }
+
+    function rolarRelacionadosDireita() {
+      animarScrollRelacionados(320);
+      /* move o carrossel para a direita */
+    }
+
+    function rolarRelacionadosEsquerda() {
+      animarScrollRelacionados(-320);
+      /* move o carrossel para a esquerda */
+    }
+  </script>
+
+</body>
+</html>
+
+
+

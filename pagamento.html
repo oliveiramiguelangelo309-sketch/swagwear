@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Pagamento - SwagWear</title>
+
+  <link rel="stylesheet" href="style.css">
+  <!-- conecta o CSS principal -->
+</head>
+
+<body>
+
+  <!-- NAVBAR -->
+  <header class="navbar">
+    <!-- menu no topo -->
+
+    <h2>SWAGWEAR</h2>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="loja.html">Loja</a>
+      <a href="entrar.html">Entrar</a>
+      <a href="cadastro.html">Conta</a>
+    </nav>
+  </header>
+
+  <!-- ÁREA PRINCIPAL DO PAGAMENTO -->
+  <section class="pagamento-page">
+    <!-- container geral da página -->
+
+    <div class="produto-resumo">
+      <!-- lado esquerdo: mostra o produto -->
+
+      <img id="produtoImagem" src="" alt="Produto selecionado">
+      <!-- imagem do produto -->
+
+      <h2 id="produtoNome">Produto</h2>
+      <!-- nome do produto -->
+
+      <p id="produtoPreco">R$ 0</p>
+      <!-- preço do produto -->
+    </div>
+
+    <div class="pagamento-box">
+      <!-- lado direito: opções de pagamento -->
+
+      <h2>Escolha a forma de pagamento</h2>
+
+      <div class="pagamento-opcoes">
+        <!-- botões para trocar a forma de pagamento -->
+
+        <button type="button" class="opcao-btn" onclick="mostrarMetodo('cartao')">
+          Cartão
+        </button>
+
+        <button type="button" class="opcao-btn" onclick="mostrarMetodo('pix')">
+          Pix
+        </button>
+
+        <button type="button" class="opcao-btn" onclick="mostrarMetodo('boleto')">
+          Boleto
+        </button>
+      </div>
+
+      <!-- MÉTODO: CARTÃO -->
+      <div id="cartao" class="metodo-pagamento ativo">
+        <!-- campos do cartão -->
+
+        <input type="text" placeholder="Nome no cartão">
+        <input type="text" placeholder="Número do cartão">
+        <input type="text" placeholder="Validade (MM/AA)">
+        <input type="text" placeholder="CVV">
+
+        <button type="button">Finalizar com cartão</button>
+      </div>
+
+      <!-- MÉTODO: PIX -->
+      <div id="pix" class="metodo-pagamento">
+        <!-- área do pix -->
+
+        <p>Escaneie o QR Code para pagar com Pix</p>
+
+        <div class="pix-box">
+          <!-- placeholder do qr code -->
+          <div class="qr-placeholder">QR CODE PIX</div>
+        </div>
+
+        <p class="pix-copia-cola">
+          Chave Pix: swagwear@pagamentos.com
+        </p>
+
+        <button type="button">Confirmar pagamento Pix</button>
+      </div>
+
+      <!-- MÉTODO: BOLETO -->
+      <div id="boleto" class="metodo-pagamento">
+        <!-- área do boleto -->
+
+        <p>Pagamento via boleto bancário</p>
+        <p class="boleto-info">Vencimento em 3 dias úteis</p>
+        <p class="boleto-info">Código: 23791.11111 22222.333333 44444.555555 6 77770000019900</p>
+
+        <button type="button">Gerar boleto</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    /* pega os parâmetros da URL */
+    const params = new URLSearchParams(window.location.search);
+    /* isso lê o que veio depois do ? na URL */
+
+    /* pega os valores enviados pela loja */
+    const nome = params.get("nome");
+    const preco = params.get("preco");
+    const imagem = params.get("imagem");
+
+    /* coloca os valores na tela */
+    document.getElementById("produtoNome").textContent = nome || "Produto SwagWear";
+    /* se vier nome, mostra; senão usa texto padrão */
+
+    document.getElementById("produtoPreco").textContent = preco ? `R$ ${preco}` : "R$ 0";
+    /* se vier preço, mostra */
+
+    document.getElementById("produtoImagem").src = imagem || "";
+    /* se vier imagem, mostra */
+
+    /* função que troca o método de pagamento */
+    function mostrarMetodo(metodoId) {
+      /* pega todos os blocos de pagamento */
+      const metodos = document.querySelectorAll(".metodo-pagamento");
+
+      /* remove a classe ativo de todos */
+      metodos.forEach((item) => {
+        item.classList.remove("ativo");
+      });
+
+      /* ativa só o método clicado */
+      document.getElementById(metodoId).classList.add("ativo");
+    }
+  </script>
+
+</body>
+</html>

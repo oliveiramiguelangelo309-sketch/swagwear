@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<!-- diz ao navegador que este arquivo usa HTML5 -->
+
+<html lang="pt-BR">
+<!-- começa o documento HTML e define o idioma como português do Brasil -->
+
+<head>
+  <meta charset="UTF-8">
+  <!-- permite acentos e caracteres especiais -->
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- faz o site se adaptar melhor a celular e tablet -->
+
+  <title>SwagWear</title>
+  <!-- nome que aparece na aba do navegador -->
+
+  <link rel="stylesheet" href="style.css">
+  <!-- conecta este HTML ao arquivo de estilos -->
+</head>
+
+
+<body>
+  <!-- tudo que aparece visualmente no site fica dentro do body -->
+
+  <header class="navbar">
+    <!-- barra de navegação fixa no topo -->
+
+    <h2>SWAGWEAR</h2>   
+    <!-- nome da marca / logo em texto -->
+
+    <nav>
+      <!-- área dos links do menu -->
+
+      <a href="index.html">Home</a>
+      <!-- leva para a página inicial -->
+
+      <a href="loja.html">Loja</a>
+      <!-- leva para a página da loja -->
+
+      <a href="ia.html">IA Looks</a>
+      
+      <a href="#">Drops</a>
+      <!-- link temporário; depois você pode trocar por uma página real -->
+
+      <a href="cadastro.html">Conta</a>
+      <!-- leva para a página de cadastro -->
+    </nav>
+  </header>
+
+  <section class="hero">
+    <!-- primeira seção grande do site, com imagem de fundo -->
+
+    <h1>SWAGWEAR</h1>
+    <!-- título principal da home -->
+
+    <p>Vista sua atitude</p>
+    <!-- subtítulo / frase da marca -->
+
+    <a href="loja.html">
+      <!-- link que leva para a loja -->
+      <button>Explorar</button>
+      <!-- botão principal da home -->
+    </a>
+  </section>
+
+
+
+
+<section class="produtos-home">
+  <!-- seção de vitrine da home -->
+
+  <div class="titulo-linha">
+    <!-- área do título + botões -->
+
+    <div>
+      <h2>Destaques da SwagWear</h2>
+      <!-- título da seção -->
+
+      <p>Peças selecionadas de todos os drops</p>
+      <!-- subtítulo -->
+    </div>
+
+    <div class="botoes-carrossel">
+      <!-- botões laterais -->
+
+      <button class="seta" onclick="rolarEsquerda()">
+        ←
+      </button>
+      <!-- botão que leva a vitrine para a esquerda -->
+
+      <button class="seta" onclick="rolarDireita()">
+        →
+      </button>
+      <!-- botão que leva a vitrine para a direita -->
+    </div>
+  </div>
+
+  <div class="carrossel-wrapper">
+    <!-- área visível do carrossel -->
+
+    <div class="carrossel" id="carrosselProdutos">
+      <!-- trilho que vai deslizar -->
+
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80" alt="Camiseta oversized preta">
+
+        <div class="info">
+          <span class="categoria">Drop 01</span>
+          <h3>Oversized Shadow Tee</h3>
+          <p>R$ 119</p>
+
+          <a
+            class="btn-card"
+            href="produto.html?nome=Oversized%20Shadow%20Tee&preco=119&imagem=https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format%26fit=crop%26w=800%26q=80"
+          >
+            Ver mais
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80" alt="Calça baggy preta">
+
+        <div class="info">
+          <span class="categoria">Drop 01</span>
+          <h3>Baggy Void Pants</h3>
+          <p>R$ 199</p>
+
+          <a
+            class="btn-card"
+            href="produto.html?nome=Baggy%20Void%20Pants&preco=199&imagem=https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format%26fit=crop%26w=800%26q=80"
+          >
+            Ver mais
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80" alt="Blusa streetwear roxa">
+
+        <div class="info">
+          <span class="categoria">Drop 02</span>
+          <h3>Neon Code Tee</h3>
+          <p>R$ 129</p>
+
+          <a
+            class="btn-card"
+            href="produto.html?nome=Neon%20Code%20Tee&preco=129&imagem=https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format%26fit=crop%26w=800%26q=80"
+          >
+            Ver mais
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format&fit=crop&w=800&q=80" alt="Calça cargo preta">
+
+        <div class="info">
+          <span class="categoria">Drop 02</span>
+          <h3>Future Cargo Black</h3>
+          <p>R$ 229</p>
+
+          <a
+            class="btn-card"
+            href="produto.html?nome=Future%20Cargo%20Black&preco=229&imagem=https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format%26fit=crop%26w=800%26q=80"
+          >
+            Ver mais
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&q=80" alt="Camiseta bege minimalista">
+
+        <div class="info">
+          <span class="categoria">Drop 03</span>
+          <h3>Raw Sand Tee</h3>
+          <p>R$ 99</p>
+
+          <a
+            class="btn-card"
+            href="produto.html?nome=Raw%20Sand%20Tee&preco=99&imagem=https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format%26fit=crop%26w=800%26q=80"
+          >
+            Ver mais
+          </a>
+        </div>
+      </div>
+
+      <div class="card">
+        <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&q=80" alt="Calça baggy bege">
+
+        <div class="info">
+          <span class="categoria">Drop 03</span>
+          <h3>Beige Drift Baggy</h3>
+          <p>R$ 189</p>
+           /* card sla qual, mais tem que mudar as fotos depois, pra colocar fotos nossas da nossa marca, lembrar quaando puder ao gabreil de mandar fotos do produto e outra, escolher produtos e coleções de roupas pra poder memmorizar aqui dentro*/
+          <a
+            class="btn-card"
+            href="produto.html?nome=Beige%20Drift%20Baggy&preco=189&imagem=https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format%26fit=crop%26w=800%26q=80"
+          >
+            Ver mais
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<script>
+  const carrossel = document.getElementById("carrosselProdutos");
+
+  function animarScroll(distancia) {
+    /* posição inicial */
+    const inicio = carrossel.scrollLeft;
+
+    /* tempo da animação */
+    const duracao = 500; 
+    /* quanto maior, mais suave */
+
+    let startTime = null;
+
+    function animacao(currentTime) {
+      if (!startTime) startTime = currentTime;
+
+      const tempoPassado = currentTime - startTime;
+
+      /* progresso de 0 a 1 */
+      const progresso = Math.min(tempoPassado / duracao, 1);
+
+      /* efeito suave (ease-out) */
+      const ease = 1 - Math.pow(1 - progresso, 3);
+
+      carrossel.scrollLeft = inicio + distancia * ease;
+      /* move com suavidade */
+
+      if (tempoPassado < duracao) {
+        requestAnimationFrame(animacao);
+      }
+    }
+
+    requestAnimationFrame(animacao);
+  }
+
+  function rolarDireita() {
+    animarScroll(350);
+    /* vai pra direita */
+  }
+
+  function rolarEsquerda() {
+    animarScroll(-350);
+    /* volta pra esquerda */
+  }
+</script>
+
+
