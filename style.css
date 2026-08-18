@@ -2009,3 +2009,482 @@ html {
   color: #BFBFBF;
   /* texto cinza */
 }
+
+/* ================= BOTÃO DO PROVADOR NO PRODUTO ================= */
+
+.btn-provador-produto {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid #7B2FFF;
+  border-radius: 12px;
+  background: rgba(123,47,255,0.12);
+  color: white;
+  text-align: center;
+  transition: 0.3s;
+  /* diferencia o provador sem alterar os dois botões de compra existentes */
+}
+
+.btn-provador-produto:hover {
+  color: white;
+  background: #7B2FFF;
+  box-shadow: 0 0 18px rgba(123,47,255,0.38);
+}
+
+/* ================= PROVADOR VIRTUAL V1 ================= */
+
+.provador-page {
+  min-height: 100vh;
+  padding: 140px 32px 80px;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(123,47,255,0.14), transparent 34%),
+    #0b0b0b;
+  /* cria profundidade discreta mantendo o fundo escuro da SwagWear */
+}
+
+.provador-cabecalho {
+  max-width: 900px;
+  margin: 0 auto 42px;
+  text-align: center;
+}
+
+.provador-etiqueta,
+.provador-categoria {
+  color: #9a62ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.provador-cabecalho h1 {
+  margin: 10px 0 12px;
+  font-size: clamp(2rem, 5vw, 3.6rem);
+}
+
+.provador-cabecalho > p:last-child,
+.provador-painel-titulo p {
+  color: #aaa;
+}
+
+.provador-container {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  /* mantém foto e produto lado a lado no desktop */
+}
+
+.provador-painel {
+  padding: 24px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 22px;
+  background: rgba(21,21,21,0.88);
+  box-shadow: 0 18px 45px rgba(0,0,0,0.28);
+}
+
+.provador-painel-titulo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.provador-painel-titulo > span {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(123,47,255,0.55);
+  border-radius: 50%;
+  color: #b692ff;
+}
+
+.provador-painel-titulo h2 {
+  margin-bottom: 4px;
+  font-size: 1.25rem;
+}
+
+.provador-preview,
+.provador-produto-imagem {
+  display: grid;
+  min-height: 430px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px dashed rgba(154,98,255,0.45);
+  border-radius: 16px;
+  background: #101010;
+  /* oferece a mesma proporção visual nos dois lados do provador */
+}
+
+.provador-preview img,
+.provador-produto-imagem img {
+  width: 100%;
+  height: 430px;
+  object-fit: cover;
+  display: block;
+}
+
+.provador-preview img[hidden],
+.provador-placeholder[hidden] {
+  display: none;
+  /* garante que placeholder e preview nunca apareçam ao mesmo tempo */
+}
+
+.provador-produto-imagem img[src=""] {
+  visibility: hidden;
+}
+
+.provador-placeholder {
+  display: flex;
+  padding: 24px;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  color: #aaa;
+  text-align: center;
+}
+
+.provador-placeholder span {
+  color: #8d4dff;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.provador-placeholder small {
+  color: #777;
+}
+
+.provador-upload-acoes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.provador-input-arquivo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  /* mantém o input acessível ao label sem exibir o controle padrão */
+}
+
+.btn-provador-secundario {
+  display: inline-block;
+  padding: 13px 18px;
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 11px;
+  background: rgba(255,255,255,0.04);
+  color: white;
+  text-align: center;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.btn-provador-secundario:hover {
+  border-color: #7B2FFF;
+  color: #b692ff;
+}
+
+.provador-privacidade {
+  margin-top: 16px;
+  color: #898989;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.provador-produto-info {
+  padding: 20px 2px 4px;
+}
+
+.provador-produto-info h2 {
+  margin: 7px 0 8px;
+  font-size: 1.65rem;
+}
+
+.provador-preco {
+  color: #ddd;
+  font-size: 1.2rem;
+}
+
+.provador-trocar {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.btn-provador {
+  display: block;
+  width: min(100%, 520px);
+  margin: 34px auto 0;
+  padding: 18px 24px;
+  border: 1px solid #8d4dff;
+  border-radius: 13px;
+  background: #7B2FFF;
+  color: white;
+  font-weight: 800;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 0 22px rgba(123,47,255,0.25);
+  transition: 0.25s;
+}
+
+.btn-provador:hover {
+  transform: translateY(-2px);
+  background: #8a45ff;
+  box-shadow: 0 0 28px rgba(123,47,255,0.4);
+}
+
+.provador-mensagem {
+  min-height: 24px;
+  margin: 16px auto 0;
+  color: #c7adff;
+  text-align: center;
+}
+
+.provador-resultado {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+  max-width: 900px;
+  margin: 36px auto 0;
+  /* compara a foto original e o resultado sem misturar com os painéis de entrada */
+}
+
+.provador-resultado[hidden] {
+  display: none;
+}
+
+.provador-resultado > div {
+  padding: 18px;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 18px;
+  background: #151515;
+}
+
+.provador-resultado img {
+  width: 100%;
+  height: 480px;
+  margin-top: 12px;
+  border-radius: 13px;
+  object-fit: cover;
+}
+
+.btn-provador:disabled {
+  cursor: wait;
+  opacity: 0.65;
+  transform: none;
+}
+
+/* ================= CARRINHO ================= */
+
+.carrinho-page {
+  min-height: 100vh;
+  padding: 140px 32px 80px;
+  background: radial-gradient(circle at 20% 10%, rgba(123,47,255,0.1), transparent 30%), #0b0b0b;
+}
+
+.carrinho-cabecalho,
+.carrinho-layout {
+  width: 100%;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.carrinho-cabecalho {
+  margin-bottom: 34px;
+}
+
+.carrinho-cabecalho h1 {
+  margin: 8px 0;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+}
+
+.carrinho-cabecalho > p:last-child,
+.carrinho-aviso {
+  color: #999;
+}
+
+.carrinho-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.7fr);
+  gap: 26px;
+  align-items: start;
+}
+
+.carrinho-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.carrinho-item,
+.carrinho-resumo,
+.carrinho-vazio {
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 18px;
+  background: #151515;
+}
+
+.carrinho-item {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr) auto;
+  gap: 20px;
+  padding: 16px;
+  align-items: center;
+}
+
+.carrinho-item > img {
+  width: 130px;
+  height: 145px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #0f0f0f;
+}
+
+.carrinho-item-info h2 {
+  margin-bottom: 8px;
+  font-size: 1.25rem;
+}
+
+.carrinho-quantidade {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 17px;
+}
+
+.carrinho-quantidade button,
+.carrinho-remover {
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 9px;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+}
+
+.carrinho-quantidade button {
+  width: 36px;
+  height: 36px;
+}
+
+.carrinho-remover {
+  padding: 10px 13px;
+  color: #bbb;
+}
+
+.carrinho-resumo {
+  position: sticky;
+  top: 110px;
+  padding: 24px;
+}
+
+.carrinho-total-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.carrinho-resumo label {
+  display: block;
+  margin-bottom: 8px;
+  color: #bbb;
+}
+
+.carrinho-resumo select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid rgba(255,255,255,0.16);
+  border-radius: 10px;
+  background: #101010;
+  color: white;
+}
+
+.carrinho-resumo .btn-provador {
+  margin-top: 20px;
+}
+
+.carrinho-aviso {
+  margin-top: 17px;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.carrinho-vazio {
+  padding: 42px;
+  text-align: center;
+}
+
+.carrinho-vazio a {
+  margin-top: 22px;
+}
+
+@media (max-width: 760px) {
+  .provador-page {
+    padding: 120px 16px 54px;
+  }
+
+  .provador-container {
+    grid-template-columns: 1fr;
+    /* no celular, foto, produto e botão aparecem um abaixo do outro */
+  }
+
+  .provador-painel {
+    padding: 18px;
+  }
+
+  .provador-preview,
+  .provador-produto-imagem {
+    min-height: 340px;
+  }
+
+  .provador-preview img,
+  .provador-produto-imagem img {
+    height: 340px;
+  }
+
+  .provador-upload-acoes {
+    grid-template-columns: 1fr;
+  }
+
+  .provador-resultado {
+    grid-template-columns: 1fr;
+  }
+
+  .provador-resultado img {
+    height: 380px;
+  }
+
+  .carrinho-page {
+    padding: 120px 16px 54px;
+  }
+
+  .carrinho-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .carrinho-item {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
+  .carrinho-item > img {
+    width: 92px;
+    height: 112px;
+  }
+
+  .carrinho-remover {
+    grid-column: 1 / -1;
+  }
+
+  .carrinho-resumo {
+    position: static;
+  }
+}

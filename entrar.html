@@ -39,13 +39,13 @@
       <p>Acesse sua conta SwagWear</p>
       <!-- subtítulo -->
 
-      <form>
+      <form id="formLogin">
         <!-- formulário de login -->
 
-        <input type="email" placeholder="Email" required>
+        <input id="email" name="email" type="email" placeholder="Email" autocomplete="email" required>
         <!-- campo de email -->
 
-        <input type="password" placeholder="Senha" required>
+        <input id="senha" name="senha" type="password" placeholder="Senha" autocomplete="current-password" required>
         <!-- campo de senha -->
 
         <button type="submit">Entrar</button>
@@ -59,6 +59,42 @@
       <!-- link para cadastro -->
     </div>
   </section>
+
+  <script>
+    /* Pega o formulário de login que já existia na página. */
+    const formLogin = document.getElementById("formLogin");
+
+    /* Envia as credenciais ao backend quando o usuário clicar em Entrar. */
+    formLogin.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+
+      try {
+        /* A comparação da senha acontece no backend, nunca dentro deste HTML. */
+        const resposta = await fetch("/api/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, senha })
+        });
+
+        const resultado = await resposta.json();
+        alert(resultado.mensagem);
+
+        /* Nesta etapa o login é validado; sessões seguras serão implementadas depois. */
+        if (resposta.ok) {
+          /* Guarda somente o token de autenticação; a senha nunca é armazenada no navegador. */
+          localStorage.setItem("swagwear_token", resultado.token);
+          localStorage.setItem("swagwear_usuario", JSON.stringify(resultado.usuario));
+          window.location.href = "index.html";
+        }
+      } catch (error) {
+        /* Informa de forma simples quando o backend não puder ser alcançado. */
+        alert("Não foi possível conectar ao servidor.");
+      }
+    });
+  </script>
 
 </body>
 </html>

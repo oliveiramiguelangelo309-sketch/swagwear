@@ -96,6 +96,11 @@
         Adicionar ao carrinho
       </button>
       <!-- botão que salva o produto no carrinho -->
+
+      <a id="btnProvador" class="btn-provador-produto" href="#">
+        ✦ Ver em mim
+      </a>
+      <!-- leva a peça atual para o Provador Virtual sem pedir outra seleção -->
     </div>
   </section>
 
@@ -240,39 +245,79 @@
   </section>
 
   <script>
-    /* ================= DADOS DO PRODUTO ================= */
+    /* ================= DADOS DO PRODUTO ================= */ /* fazer o banco de dados dentro do vercel, sql pessoaas tem que fazer isso, julia garcia, matheus villa e gabriel */ 
 
     const params = new URLSearchParams(window.location.search);
     /* pega tudo o que veio depois do ? na URL */
 
-    const nome = params.get("nome");
+    const produtoId = params.get("produto");
+    /* usa o id quando a página foi aberta por um produto que já existe no banco */
+
+    let nome = params.get("nome");
     /* pega o nome do produto */
 
-    const preco = params.get("preco");
+    let preco = params.get("preco");
     /* pega o preço do produto */
 
-    const imagem = params.get("imagem");
+    let imagem = params.get("imagem");
     /* pega a imagem do produto */
 
-    document.getElementById("produtoNome").textContent = nome || "Produto SwagWear";
-    /* coloca o nome na tela */
+    const produtoNome = document.getElementById("produtoNome");
+    const produtoPreco = document.getElementById("produtoPreco");
+    const produtoImagem = document.getElementById("produtoImagem");
+    const btnProvador = document.getElementById("btnProvador");
 
-    document.getElementById("produtoPreco").textContent = preco ? `R$ ${preco}` : "R$ 0";
-    /* coloca o preço na tela */
+    /* Atualiza os dados visuais e os links sempre que o produto é carregado. */
+    function atualizarProdutoNaPagina() {
+      produtoNome.textContent = nome || "Produto SwagWear";
+      produtoPreco.textContent = preco ? `R$ ${preco}` : "R$ 0";
+      produtoImagem.src = imagem || "";
 
-    document.getElementById("produtoImagem").src = imagem || "";
-    /* coloca a imagem na tela */
+      btnComprar.href =
+        `pagamento.html?nome=${encodeURIComponent(nome || "Produto SwagWear")}` +
+        `&preco=${encodeURIComponent(preco || "0")}` +
+        `&imagem=${encodeURIComponent(imagem || "")}`;
+
+      /* Com id, o provador consultará a API; sem id, preserva os dados dos links antigos. */
+      btnProvador.href = produtoId
+        ? `provador.html?produto=${encodeURIComponent(produtoId)}`
+        : `provador.html?nome=${encodeURIComponent(nome || "")}` +
+          `&preco=${encodeURIComponent(preco || "")}` +
+          `&imagem=${encodeURIComponent(imagem || "")}`;
+    }
 
     /* ================= BOTÃO COMPRAR ================= */
 
     const btnComprar = document.getElementById("btnComprar");
     /* pega o botão comprar */
 
-    btnComprar.href =
-      `pagamento.html?nome=${encodeURIComponent(nome || "Produto SwagWear")}` +
-      `&preco=${encodeURIComponent(preco || "0")}` +
-      `&imagem=${encodeURIComponent(imagem || "")}`;
-    /* monta o link para a página de pagamento com os mesmos dados */
+    /* Se houver id, consulta o backend sem remover a compatibilidade com URLs antigas. */
+    async function carregarProdutoDoBanco() {
+      if (!produtoId) {
+        atualizarProdutoNaPagina();
+        return;
+      }
+
+      try {
+        const resposta = await fetch(`/api/produtos/${encodeURIComponent(produtoId)}`);
+
+        if (!resposta.ok) {
+          throw new Error("Produto não encontrado.");
+        }
+
+        const produtoDoBanco = await resposta.json();
+        nome = produtoDoBanco.nome;
+        preco = produtoDoBanco.preco;
+        imagem = produtoDoBanco.imagem;
+        atualizarProdutoNaPagina();
+      } catch (error) {
+        alert("Não foi possível carregar este produto.");
+        atualizarProdutoNaPagina();
+      }
+    }
+
+    carregarProdutoDoBanco();
+    /* inicia o carregamento assim que a página abre */
 
     /* ================= BOTÃO CARRINHO ================= */
 
@@ -283,6 +328,8 @@
       /* quando clicar, começa a lógica do carrinho */
 
       const produto = {
+        produto_id: produtoId ? Number(produtoId) : null,
+        /* o id permite ao backend consultar o preço real quando o pedido for finalizado */
         nome: nome || "Produto SwagWear",
         preco: preco || "0",
         imagem: imagem || "",
@@ -294,7 +341,11 @@
       /* tenta pegar o carrinho salvo no navegador
          se não existir nada, usa um array vazio */
 
-      const produtoExistente = carrinho.find(item => item.nome === produto.nome);
+      const produtoExistente = carrinho.find(item =>
+        produto.produto_id
+          ? item.produto_id === produto.produto_id
+          : item.nome === produto.nome
+      );
       /* procura se esse produto já existe no carrinho */
 
       if (produtoExistente) {

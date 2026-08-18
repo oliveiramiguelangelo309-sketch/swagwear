@@ -46,19 +46,20 @@
       <p>Entre para a SwagWear</p>
       <!-- subtítulo -->
 
-      <form>
+      <form id="formCadastro">
         <!-- formulário de cadastro -->
 
-        <input type="text" placeholder="Nome" required>
+        <input id="nome" name="nome" type="text" placeholder="Nome" autocomplete="name" required>
         <!-- campo de nome -->
 
-        <input type="email" placeholder="Email" required>
-        <!-- campo de email -->
+        <input id="email" name="email" type="email" placeholder="Email" autocomplete="email" required>
+        <!-- campo de email --> 
+        <!-- gravar o email senha e detalhes no banco de dados e na nuvem -->
 
-        <input type="password" placeholder="Senha" required>
+        <input id="senha" name="senha" type="password" placeholder="Senha" autocomplete="new-password" minlength="6" required>
         <!-- campo de senha -->
 
-        <input type="password" placeholder="Confirmar senha" required>
+        <input id="confirmarSenha" name="confirmarSenha" type="password" placeholder="Confirmar senha" autocomplete="new-password" minlength="6" required>
         <!-- campo para confirmar a senha -->
 
         <button type="submit">Cadastrar</button>
@@ -66,11 +67,53 @@
       </form>
 
       <p class="login-link">
-        Já tem conta? <a href="#">Entrar</a>
+        Já tem conta? <a href="entrar.html">Entrar</a>
       </p>
       <!-- texto com link de login -->
     </div>
   </section>
+
+  <script>
+    /* Pega o formulário existente sem alterar o visual da página. */
+    const formCadastro = document.getElementById("formCadastro");
+
+    /* Intercepta o envio para mandar os dados ao backend sem recarregar a página. */
+    formCadastro.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      /* Lê os valores digitados nos campos. */
+      const nome = document.getElementById("nome").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const senha = document.getElementById("senha").value;
+      const confirmarSenha = document.getElementById("confirmarSenha").value;
+
+      /* A confirmação existe somente no navegador e nunca precisa ser salva no banco. */
+      if (senha !== confirmarSenha) {
+        alert("As senhas não são iguais.");
+        return;
+      }
+
+      try {
+        /* Envia nome, email e senha em JSON para a rota de cadastro. */
+        const resposta = await fetch("/api/cadastro", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nome, email, senha })
+        });
+
+        const resultado = await resposta.json();
+        alert(resultado.mensagem);
+
+        /* Após o cadastro funcionar, leva o usuário para a página de login. */
+        if (resposta.ok) {
+          window.location.href = "entrar.html";
+        }
+      } catch (error) {
+        /* Esta mensagem aparece quando o servidor está desligado ou inacessível. */
+        alert("Não foi possível conectar ao servidor.");
+      }
+    });
+  </script>
 
 </body>
 </html>
