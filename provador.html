@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <!-- permite acentos e caracteres especiais -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- faz as duas colunas se adaptarem corretamente a celulares -->
+
+  <title>Provador Virtual - SwagWear</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- reutiliza a identidade visual principal do projeto -->
+</head>
+
+<body>
+  <header class="navbar">
+    <!-- mantém a mesma navegação usada no restante da SwagWear -->
+    <h2>SWAGWEAR</h2>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="loja.html">Loja</a>
+      <a href="carrinho.html">Carrinho</a>
+      <a href="cadastro.html">Conta</a>
+    </nav>
+  </header>
+
+  <main class="provador-page">
+    <header class="provador-cabecalho">
+      <p class="provador-etiqueta">SWAGWEAR VIRTUAL TRY-ON</p>
+      <h1>Veja a peça antes de vestir.</h1>
+      <p>Prepare sua foto e confira a roupa escolhida para a futura experiência com IA.</p>
+    </header>
+
+    <div class="provador-container">
+      <section class="provador-painel provador-foto">
+        <div class="provador-painel-titulo">
+          <span>01</span>
+          <div>
+            <h2>Sua foto</h2>
+            <p>Use uma foto clara e de corpo inteiro.</p>
+          </div>
+        </div>
+
+        <div class="provador-preview" id="areaPreview">
+          <img id="fotoPreview" alt="Pré-visualização da foto escolhida" hidden>
+          <div id="fotoPlaceholder" class="provador-placeholder">
+            <span>＋</span>
+            <strong>Sua foto aparecerá aqui</strong>
+            <small>JPG, PNG ou imagem da câmera</small>
+          </div>
+        </div>
+
+        <div class="provador-upload-acoes">
+          <label class="btn-provador-secundario" for="fotoArquivo">Enviar foto</label>
+          <input id="fotoArquivo" class="provador-input-arquivo" type="file" accept="image/*">
+
+          <label class="btn-provador-secundario" for="fotoCamera">Tirar foto</label>
+          <input id="fotoCamera" class="provador-input-arquivo" type="file" accept="image/*" capture="environment">
+        </div>
+
+        <p class="provador-privacidade">
+          Sua foto será utilizada apenas para gerar sua visualização. Nesta versão, ela permanece somente nesta página.
+        </p>
+      </section>
+
+      <section class="provador-painel provador-produto">
+        <div class="provador-painel-titulo">
+          <span>02</span>
+          <div>
+            <h2>Peça escolhida</h2>
+            <p>O produto acompanha você desde a página anterior.</p>
+          </div>
+        </div>
+
+        <div class="provador-produto-imagem">
+          <img id="provadorProdutoImagem" src="" alt="Peça selecionada">
+        </div>
+
+        <div class="provador-produto-info">
+          <p id="provadorProdutoCategoria" class="provador-categoria">Produto SwagWear</p>
+          <h2 id="provadorProdutoNome">Carregando peça...</h2>
+          <p id="provadorProdutoPreco" class="provador-preco">R$ 0,00</p>
+        </div>
+
+        <a class="btn-provador-secundario provador-trocar" href="loja.html">Trocar peça</a>
+      </section>
+    </div>
+
+    <button id="btnGerarProvador" class="btn-provador" type="button">
+      ✦ VER COMO FICA
+    </button>
+
+    <p id="mensagemProvador" class="provador-mensagem" role="status" aria-live="polite"></p>
+
+    <section id="provadorResultado" class="provador-resultado" hidden>
+      <div>
+        <p class="provador-etiqueta">ANTES</p>
+        <img id="resultadoAntes" alt="Foto original usada no provador">
+      </div>
+      <div>
+        <p class="provador-etiqueta">RESULTADO</p>
+        <img id="resultadoDepois" alt="Resultado produzido pelo provador virtual">
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /* ================= ESTADO TEMPORÁRIO DO PROVADOR ================= */
+
+    let fotoPessoa = null;
+    /* guarda somente o arquivo em memória enquanto esta página estiver aberta */
+
+    let urlPreviewAtual = null;
+    /* guarda a URL temporária usada para mostrar o preview no navegador */
+
+    let produtoSelecionado = null;
+    /* futuramente reunirá produto.imagem_sem_fundo e produto.tipo para enviar à IA */
+
+    const parametros = new URLSearchParams(window.location.search);
+    const produtoId = parametros.get("produto");
+
+    const fotoArquivo = document.getElementById("fotoArquivo");
+    const fotoCamera = document.getElementById("fotoCamera");
+    const fotoPreview = document.getElementById("fotoPreview");
+    const fotoPlaceholder = document.getElementById("fotoPlaceholder");
+    const mensagemProvador = document.getElementById("mensagemProvador");
+
+    /* Formata o número recebido da API como moeda brasileira. */
+    function formatarPreco(preco) {
+      return Number(preco || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    /* Mostra os dados do produto sem armazená-los no navegador. */
+    function mostrarProduto(produto) {
+      produtoSelecionado = produto;
+      document.getElementById("provadorProdutoImagem").src = produto.imagem || "";
+      document.getElementById("provadorProdutoNome").textContent = produto.nome || "Produto SwagWear";
+      document.getElementById("provadorProdutoPreco").textContent = formatarPreco(produto.preco);
+      document.getElementById("provadorProdutoCategoria").textContent = produto.categoria || produto.tipo || "Produto SwagWear";
+    }
+
+    /* Busca a peça real pelo id; URLs antigas usam os dados recebidos como compatibilidade. */
+    async function carregarProduto() {
+      if (produtoId) {
+        try {
+          const resposta = await fetch(`/api/produtos/${encodeURIComponent(produtoId)}`);
+
+          if (!resposta.ok) {
+            throw new Error("Produto não encontrado.");
+          }
+
+          mostrarProduto(await resposta.json());
+          return;
+        } catch (error) {
+          mensagemProvador.textContent = "Não foi possível carregar a peça selecionada.";
+          return;
+        }
+      }
+
+      const nome = parametros.get("nome");
+      const preco = parametros.get("preco");
+      const imagem = parametros.get("imagem");
+
+      if (nome && imagem) {
+        mostrarProduto({ nome, preco, imagem, categoria: "Produto SwagWear" });
+      } else {
+        document.getElementById("provadorProdutoNome").textContent = "Nenhuma peça selecionada";
+      }
+    }
+
+    /* Recebe a foto escolhida pelo arquivo ou pela câmera e cria um preview local. */
+    function prepararPreview(input) {
+      const arquivo = input.files[0];
+
+      if (!arquivo) {
+        return;
+      }
+
+      if (!arquivo.type.startsWith("image/")) {
+        mensagemProvador.textContent = "Escolha um arquivo de imagem válido.";
+        input.value = "";
+        return;
+      }
+
+      fotoPessoa = arquivo;
+
+      /* Libera a URL anterior para não manter memória desnecessária no navegador. */
+      if (urlPreviewAtual) {
+        URL.revokeObjectURL(urlPreviewAtual);
+      }
+
+      urlPreviewAtual = URL.createObjectURL(arquivo);
+      fotoPreview.src = urlPreviewAtual;
+      fotoPreview.hidden = false;
+      fotoPlaceholder.hidden = true;
+      mensagemProvador.textContent = "Foto pronta para a visualização.";
+    }
+
+    fotoArquivo.addEventListener("change", function () {
+      prepararPreview(fotoArquivo);
+    });
+
+    fotoCamera.addEventListener("change", function () {
+      prepararPreview(fotoCamera);
+    });
+
+    document.getElementById("btnGerarProvador").addEventListener("click", async function () {
+      if (!fotoPessoa) {
+        mensagemProvador.textContent = "Escolha ou tire uma foto primeiro.";
+        return;
+      }
+
+      if (!produtoSelecionado) {
+        mensagemProvador.textContent = "Selecione uma peça primeiro.";
+        return;
+      }
+
+      const botao = document.getElementById("btnGerarProvador");
+      const resultadoArea = document.getElementById("provadorResultado");
+
+      /* FormData envia arquivo e texto juntos usando multipart/form-data. */
+      const formData = new FormData();
+      formData.append("foto", fotoPessoa);
+      formData.append("produto_id", produtoSelecionado.id);
+
+      botao.disabled = true;
+      botao.textContent = "Gerando seu look...";
+      mensagemProvador.textContent = "Isso pode levar alguns instantes.";
+
+      /* Interrompe a espera do navegador após dois minutos e mostra uma mensagem clara. */
+      const timeoutController = new AbortController();
+      const timeoutId = setTimeout(function () {
+        timeoutController.abort();
+      }, 120000);
+
+      try {
+
+        const resposta = await fetch("/api/provador", {
+          method: "POST",
+          body: formData,
+          signal: timeoutController.signal,
+          /* o navegador cria automaticamente o Content-Type com o limite multipart correto */
+        });
+
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) {
+          throw new Error(resultado.mensagem || "Não foi possível gerar a visualização.");
+        }
+
+        document.getElementById("resultadoAntes").src = urlPreviewAtual;
+        document.getElementById("resultadoDepois").src = resultado.imagemResultado;
+        resultadoArea.hidden = false;
+        mensagemProvador.textContent = resultado.mensagem;
+      } catch (error) {
+        mensagemProvador.textContent = error.name === "AbortError"
+          ? "A geração demorou mais que o esperado. Tente novamente."
+          : error.message;
+      } finally {
+        clearTimeout(timeoutId);
+        botao.disabled = false;
+        botao.textContent = "✦ VER COMO FICA";
+      }
+    });
+
+    /* Remove a URL temporária quando a página fecha; a foto nunca vai para localStorage. */
+    window.addEventListener("beforeunload", function () {
+      if (urlPreviewAtual) {
+        URL.revokeObjectURL(urlPreviewAtual);
+      }
+    });
+
+    carregarProduto();
+    /* inicia a consulta do produto assim que o provador abre */
+  </script>
+</body>
+</html>

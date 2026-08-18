@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrinho - SwagWear</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <h2>SWAGWEAR</h2>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="loja.html">Loja</a>
+      <a href="carrinho.html">Carrinho</a>
+      <a href="cadastro.html">Conta</a>
+    </nav>
+  </header>
+
+  <main class="carrinho-page">
+    <div class="carrinho-cabecalho">
+      <p class="produto-tag">SEU CARRINHO</p>
+      <h1>Peças escolhidas</h1>
+      <p>Revise as quantidades antes de criar seu pedido.</p>
+    </div>
+
+    <div class="carrinho-layout">
+      <section id="listaCarrinho" class="carrinho-lista" aria-live="polite"></section>
+
+      <aside class="carrinho-resumo">
+        <h2>Resumo</h2>
+        <div class="carrinho-total-linha">
+          <span>Total exibido</span>
+          <strong id="carrinhoTotal">R$ 0,00</strong>
+        </div>
+
+        <label for="formaPagamento">Forma de pagamento</label>
+        <select id="formaPagamento">
+          <option value="pix">Pix</option>
+          <option value="cartao">Cartão</option>
+          <option value="boleto">Boleto</option>
+        </select>
+
+        <button id="btnFinalizarPedido" class="btn-provador" type="button">
+          Finalizar pedido
+        </button>
+
+        <p class="carrinho-aviso">
+          O backend recalcula os preços usando o banco. Nenhum dado de cartão é armazenado.
+        </p>
+        <p id="mensagemCarrinho" class="provador-mensagem" role="status"></p>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    /* O carrinho continua no localStorage para preservar o comportamento atual do projeto. */
+    let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+
+    const listaCarrinho = document.getElementById("listaCarrinho");
+    const carrinhoTotal = document.getElementById("carrinhoTotal");
+    const mensagemCarrinho = document.getElementById("mensagemCarrinho");
+
+    function salvarCarrinho() {
+      localStorage.setItem("carrinho", JSON.stringify(carrinho));
+      renderizarCarrinho();
+    }
+
+    function formatarPreco(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", {
+        style: "currency",
+        currency: "BRL"
+      });
+    }
+
+    /* Desenha novamente os itens sempre que quantidade ou remoção mudar. */
+    function renderizarCarrinho() {
+      listaCarrinho.innerHTML = "";
+
+      if (carrinho.length === 0) {
+        listaCarrinho.innerHTML = `
+          <div class="carrinho-vazio">
+            <h2>Seu carrinho está vazio.</h2>
+            <a class="btn-provador-secundario" href="loja.html">Explorar a loja</a>
+          </div>`;
+      }
+
+      carrinho.forEach((item, indice) => {
+        const artigo = document.createElement("article");
+        artigo.className = "carrinho-item";
+
+        /* textContent abaixo evita interpretar nomes de produto como HTML. */
+        artigo.innerHTML = `
+          <img src="" alt="">
+          <div class="carrinho-item-info">
+            <h2></h2>
+            <p>${formatarPreco(item.preco)}</p>
+            <div class="carrinho-quantidade">
+              <button type="button" data-acao="diminuir" data-indice="${indice}">−</button>
+              <span>${item.quantidade}</span>
+              <button type="button" data-acao="aumentar" data-indice="${indice}">＋</button>
+            </div>
+          </div>
+          <button class="carrinho-remover" type="button" data-acao="remover" data-indice="${indice}">Remover</button>`;
+
+        const imagem = artigo.querySelector("img");
+        imagem.src = item.imagem || "";
+        imagem.alt = item.nome || "Produto SwagWear";
+        artigo.querySelector("h2").textContent = item.nome || "Produto SwagWear";
+        listaCarrinho.appendChild(artigo);
+      });
+
+      const totalVisual = carrinho.reduce(
+        (total, item) => total + Number(item.preco || 0) * Number(item.quantidade || 0),
+        0
+      );
+      carrinhoTotal.textContent = formatarPreco(totalVisual);
+    }
+
+    /* Um único listener atende todos os botões criados dinamicamente. */
+    listaCarrinho.addEventListener("click", function (event) {
+      const botao = event.target.closest("button[data-acao]");
+      if (!botao) return;
+
+      const indice = Number(botao.dataset.indice);
+      const acao = botao.dataset.acao;
+
+      if (acao === "aumentar") carrinho[indice].quantidade += 1;
+      if (acao === "diminuir" && carrinho[indice].quantidade > 1) carrinho[indice].quantidade -= 1;
+      if (acao === "remover") carrinho.splice(indice, 1);
+      salvarCarrinho();
+    });
+
+    document.getElementById("btnFinalizarPedido").addEventListener("click", async function () {
+      const token = localStorage.getItem("swagwear_token");
+
+      if (!token) {
+        mensagemCarrinho.textContent = "Entre na sua conta antes de finalizar o pedido.";
+        return;
+      }
+
+      if (carrinho.length === 0) {
+        mensagemCarrinho.textContent = "Adicione pelo menos uma peça ao carrinho.";
+        return;
+      }
+
+      /* Produtos antigos sem id continuam no carrinho, mas precisam ser migrados antes do pedido. */
+      if (carrinho.some((item) => !item.produto_id)) {
+        mensagemCarrinho.textContent = "Uma peça antiga do carrinho não possui ID. Remova-a e adicione novamente pela loja.";
+        return;
+      }
+
+      const itens = carrinho.map((item) => ({
+        produto_id: item.produto_id,
+        quantidade: item.quantidade
+      }));
+
+      try {
+        const resposta = await fetch("/api/pedidos", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            itens,
+            forma_pagamento: document.getElementById("formaPagamento").value
+          })
+        });
+
+        const resultado = await resposta.json();
+        mensagemCarrinho.textContent = resultado.mensagem;
+
+        if (resposta.ok) {
+          carrinho = [];
+          salvarCarrinho();
+          mensagemCarrinho.textContent = `Pedido #${resultado.pedido.id} criado com sucesso.`;
+        }
+      } catch (error) {
+        mensagemCarrinho.textContent = "Não foi possível conectar ao servidor.";
+      }
+    });
+
+    renderizarCarrinho();
+  </script>
+</body>
+</html>

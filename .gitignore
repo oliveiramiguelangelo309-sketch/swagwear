@@ -1,0 +1,36 @@
+# Dependencias baixadas pelo npm. Elas podem ser recriadas com `npm install`.
+node_modules/
+
+# Caches locais criados pelo gerenciador pnpm durante a instalação.
+.npm-cache/
+.pnpm-store/
+
+# Banco local gerado na primeira execucao. Ele pode conter dados pessoais.
+backend/database/*.db
+backend/database/*.db-shm
+backend/database/*.db-wal
+
+# Arquivos locais com variaveis de ambiente nao devem ser publicados.
+.env
+.env.*
+
+# O exemplo sem segredos precisa continuar disponivel para outros desenvolvedores.
+!.env.example
+
+# Pastas reservadas para uploads temporários, caso sejam usadas no futuro.
+# O provador atual utiliza memória RAM e não cria arquivos aqui.
+uploads/
+tmp/
+temp/
+results/
+resultados/
+huggingface-space/test-results/
+
+# Configuracao local criada ao vincular o projeto com a Vercel.
+.vercel/
+
+# A Vercel pode criar arquivos como .env.local; todos continuam privados.
+.env*
+
+# Mantem apenas o modelo explicativo versionado, sempre sem valores reais.
+!.env.example
