@@ -2010,6 +2010,514 @@ html {
   /* texto cinza */
 }
 
+/* ====================================================== */
+/* CONTA, SESSÃO E NAVBAR LOGADA                          */
+/* ====================================================== */
+
+/* O menu de conta fica alinhado com os links já existentes. */
+.navbar nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navbar nav > a {
+  margin-left: 0;
+}
+
+.account-menu {
+  position: relative;
+}
+
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 9px 5px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+}
+
+.account-avatar,
+.perfil-avatar {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7b2fff, #a05cff);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 0 18px rgba(123, 47, 255, 0.35);
+}
+
+.account-avatar {
+  width: 34px;
+  height: 34px;
+}
+
+.account-name {
+  cursor: pointer;
+}
+
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  display: none;
+  padding: 8px;
+  border: 1px solid rgba(123, 47, 255, 0.35);
+  border-radius: 14px;
+  background: #151318;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
+}
+
+.account-menu.is-open .account-dropdown {
+  display: grid;
+}
+
+.account-dropdown a,
+.account-logout {
+  width: 100%;
+  margin: 0;
+  padding: 11px 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: #eee;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.account-dropdown a:hover,
+.account-logout:hover {
+  background: rgba(123, 47, 255, 0.16);
+  color: #fff;
+}
+
+.account-logout {
+  margin-top: 5px;
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  color: #d9bfff;
+}
+
+/* Substitui alertas por mensagens integradas ao card do login. */
+.login-status {
+  display: none;
+  margin-top: 18px;
+  padding: 13px;
+  border-radius: 11px;
+  text-align: left;
+}
+
+.login-status.is-loading,
+.login-status.is-error,
+.login-status.is-success {
+  display: grid;
+  gap: 5px;
+}
+
+.login-status.is-loading {
+  background: rgba(123, 47, 255, 0.12);
+  color: #d9c6ff;
+}
+
+.login-status.is-error {
+  border: 1px solid rgba(255, 99, 132, 0.35);
+  background: rgba(255, 99, 132, 0.1);
+  color: #ffb6c5;
+}
+
+.login-status.is-success {
+  border: 1px solid rgba(123, 47, 255, 0.45);
+  background: linear-gradient(135deg, rgba(123, 47, 255, 0.22), rgba(255, 255, 255, 0.04));
+  color: #fff;
+  box-shadow: 0 0 24px rgba(123, 47, 255, 0.18);
+}
+
+.login-status small {
+  color: #bdb4c9;
+}
+
+.box button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.conta-page {
+  min-height: 100vh;
+  padding: 125px 6vw 70px;
+  background: radial-gradient(circle at 80% 0%, rgba(123, 47, 255, 0.18), transparent 34%), #0a0a0a;
+}
+
+.conta-header {
+  max-width: 1180px;
+  margin: 0 auto 26px;
+}
+
+.conta-header h1 {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+}
+
+.conta-header > p:last-child,
+.conta-section-title p,
+.perfil-card p,
+.senha-card > p {
+  color: #aaa2b3;
+}
+
+.conta-tabs {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 5px;
+}
+
+.conta-tabs button {
+  flex: 0 0 auto;
+  padding: 11px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #d7d2dd;
+  cursor: pointer;
+}
+
+.conta-tabs button.is-active {
+  border-color: #7b2fff;
+  background: rgba(123, 47, 255, 0.2);
+  color: #fff;
+}
+
+.conta-panel,
+.conta-bloqueada {
+  max-width: 1180px;
+  margin: 0 auto;
+}
+
+.perfil-card,
+.senha-card,
+.pedido-card,
+.conta-item,
+.conta-empty,
+.conta-bloqueada {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
+}
+
+.perfil-card {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 30px;
+}
+
+.perfil-dados {
+  flex: 1;
+}
+
+.conta-logout-button {
+  padding: 11px 16px;
+  border: 1px solid rgba(123, 47, 255, 0.45);
+  border-radius: 10px;
+  background: rgba(123, 47, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* A tela de pagamento reutiliza os cards da conta e o resumo do carrinho. */
+.pagamento-page {
+  min-height: 100vh;
+  padding: 125px 6vw 70px;
+  background: radial-gradient(circle at 15% 0%, rgba(123, 47, 255, 0.18), transparent 32%), #0a0a0a;
+}
+
+.pagamento-layout {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  gap: 28px;
+}
+
+.pagamento-produtos h1 {
+  margin-bottom: 8px;
+  font-size: clamp(2.1rem, 5vw, 3.6rem);
+}
+
+.comprando-como {
+  margin-bottom: 24px;
+  color: #c8b6df;
+}
+
+.pagamento-resumo {
+  align-self: start;
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.pagamento-resumo label {
+  color: #d7d2dd;
+}
+
+.pagamento-resumo select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 10px;
+  background: #17151a;
+  color: #fff;
+}
+
+.perfil-avatar {
+  flex: 0 0 auto;
+  width: 82px;
+  height: 82px;
+  font-size: 2rem;
+}
+
+.conta-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.conta-section-title a,
+.conta-primary-button {
+  padding: 11px 16px;
+  border-radius: 10px;
+  background: #7b2fff;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.conta-lista {
+  display: grid;
+  gap: 14px;
+}
+
+.conta-item {
+  display: grid;
+  grid-template-columns: 78px 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 14px;
+}
+
+.conta-item img {
+  width: 78px;
+  height: 78px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #1c1a1f;
+}
+
+.pedido-card,
+.conta-empty,
+.senha-card {
+  padding: 22px;
+}
+
+.pedido-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pedido-status {
+  align-self: flex-start;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: rgba(123, 47, 255, 0.2);
+  color: #d6bcff;
+  text-transform: capitalize;
+}
+
+.pedido-itens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pedido-itens span {
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.tracking-steps {
+  display: grid;
+  gap: 0;
+  margin-top: 18px;
+}
+
+.tracking-step {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  color: #77717e;
+}
+
+.tracking-step span {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #544e5a;
+  border-radius: 50%;
+}
+
+.tracking-step.is-complete {
+  color: #fff;
+}
+
+.tracking-step.is-complete span {
+  border-color: #7b2fff;
+  background: #7b2fff;
+}
+
+.senha-card {
+  max-width: 560px;
+}
+
+.senha-card label {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  color: #d7d2dd;
+}
+
+.conta-message {
+  display: none;
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.conta-message.is-error,
+.conta-message.is-success {
+  display: block;
+}
+
+.conta-message.is-error {
+  background: rgba(255, 99, 132, 0.1);
+  color: #ffb6c5;
+}
+
+.conta-message.is-success {
+  background: rgba(77, 214, 145, 0.12);
+  color: #9ff0c7;
+}
+
+.conta-bloqueada {
+  max-width: 650px;
+  padding: 45px;
+  text-align: center;
+}
+
+.conta-lock {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: rgba(123, 47, 255, 0.2);
+  color: #caa9ff;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    gap: 14px;
+  }
+
+  .navbar nav {
+    gap: 11px;
+    overflow: visible;
+  }
+
+  /* No celular, preservamos Home, Loja e os acessos de autenticação. */
+  .navbar nav > a:not([href="index.html"]):not([href="loja.html"]):not(.account-auth-link) {
+    display: none;
+  }
+
+  .account-name {
+    display: none;
+  }
+
+  .account-dropdown {
+    position: fixed;
+    top: 72px;
+    right: 12px;
+    width: min(260px, calc(100vw - 24px));
+  }
+
+  .conta-page {
+    padding: 105px 16px 45px;
+  }
+
+  .conta-tabs {
+    margin-right: -16px;
+  }
+
+  .conta-section-title,
+  .perfil-card {
+    align-items: flex-start;
+  }
+
+  .perfil-card {
+    flex-wrap: wrap;
+  }
+
+  .conta-logout-button {
+    width: 100%;
+  }
+
+  .pagamento-page {
+    padding: 105px 16px 45px;
+  }
+
+  .pagamento-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .conta-section-title {
+    flex-direction: column;
+  }
+
+  .conta-item {
+    grid-template-columns: 64px 1fr;
+  }
+
+  .conta-item img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .conta-item > strong {
+    grid-column: 2;
+  }
+
+  .conta-bloqueada {
+    padding: 30px 20px;
+  }
+}
+
 /* ================= BOTÃO DO PROVADOR NO PRODUTO ================= */
 
 .btn-provador-produto {

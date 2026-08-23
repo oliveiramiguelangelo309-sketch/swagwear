@@ -1,5 +1,5 @@
 // Centraliza as consultas do pedido para que a rota continue pequena.
-const { get, transaction } = require('../database');
+const { run, get, all, transaction } = require('../database');
 
 const formasPagamento = ['cartao', 'pix', 'boleto'];
 
@@ -106,4 +106,86 @@ async function criarPedido(request, response) {
   }
 }
 
-module.exports = { criarPedido };
+// Lista somente os pedidos que pertencem ao usuário identificado pelo JWT.
+async function listarMeusPedidos(request, response) {
+  try {
+    // O LEFT JOIN mantém o pedido visível mesmo se algum item antigo estiver ausente.
+    const linhas = await all(
+      `SELECT
+         p.id AS pedido_id, p.status, p.metodo_pagamento, p.total_centavos, p.criado_em,
+         i.id AS item_id, i.produto_id, i.quantidade, i.preco_unitario_centavos,
+         pr.nome AS produto_nome, pr.imagem AS produto_imagem
+       FROM pedidos p
+       LEFT JOIN itens_pedido i ON i.pedido_id = p.id
+       LEFT JOIN produtos pr ON pr.id = i.produto_id
+       WHERE p.usuario_id = ?
+       ORDER BY p.criado_em DESC, p.id DESC, i.id ASC`,
+      [request.usuario.id]
+    );
+
+    // O banco devolve uma linha por item; o Map agrupa os itens dentro de cada pedido.
+    const pedidosPorId = new Map();
+
+    for (const linha of linhas) {
+      if (!pedidosPorId.has(linha.pedido_id)) {
+        pedidosPorId.set(linha.pedido_id, {
+          id: linha.pedido_id,
+          status: linha.status,
+          forma_pagamento: linha.metodo_pagamento,
+          total: Number(linha.total_centavos || 0) / 100,
+          criado_em: linha.criado_em,
+          itens: []
+        });
+      }
+
+      if (linha.item_id) {
+        pedidosPorId.get(linha.pedido_id).itens.push({
+          produto_id: linha.produto_id,
+          nome: linha.produto_nome || 'Produto SwagWear',
+          imagem: linha.produto_imagem || '',
+          quantidade: linha.quantidade,
+          preco_unitario: Number(linha.preco_unitario_centavos || 0) / 100
+        });
+      }
+    }
+
+    return response.json({ pedidos: Array.from(pedidosPorId.values()) });
+  } catch (error) {
+    console.error('Erro ao listar pedidos:', error.message);
+    return response.status(500).json({ mensagem: 'Não foi possível carregar seus pedidos.' });
+  }
+}
+
+// Confirma um pagamento simulado para a apresentação da FECIP.
+// O WHERE inclui usuario_id: mesmo sabendo o número do pedido, outro usuário não pode alterá-lo.
+async function confirmarPagamentoSimulado(request, response) {
+  const pedidoId = Number(request.params.id);
+
+  if (!Number.isInteger(pedidoId) || pedidoId <= 0) {
+    return response.status(400).json({ mensagem: 'Pedido inválido.' });
+  }
+
+  try {
+    const resultado = await run(
+      `UPDATE pedidos
+       SET status = 'pago', atualizado_em = CURRENT_TIMESTAMP
+       WHERE id = ? AND usuario_id = ? AND status = 'pendente'`,
+      [pedidoId, request.usuario.id]
+    );
+
+    if (resultado.changes !== 1) {
+      // A resposta genérica não revela se o pedido pertence a outra pessoa.
+      return response.status(404).json({ mensagem: 'Pedido pendente não encontrado.' });
+    }
+
+    return response.json({
+      mensagem: 'Pagamento simulado confirmado.',
+      pedido: { id: pedidoId, status: 'pago' }
+    });
+  } catch (error) {
+    console.error('Erro ao confirmar pagamento simulado:', error.message);
+    return response.status(500).json({ mensagem: 'Não foi possível confirmar o pagamento.' });
+  }
+}
+
+module.exports = { criarPedido, listarMeusPedidos, confirmarPagamentoSimulado };

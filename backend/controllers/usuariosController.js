@@ -104,5 +104,48 @@ async function entrar(request, response) {
   }
 }
 
+// Altera a senha somente do usuário identificado pelo token JWT.
+async function alterarSenha(request, response) {
+  const senhaAtual = String(request.body.senha_atual || '');
+  const novaSenha = String(request.body.nova_senha || '');
+
+  if (!senhaAtual || !novaSenha) {
+    return response.status(400).json({ mensagem: 'Preencha a senha atual e a nova senha.' });
+  }
+
+  // Usa a mesma regra simples já aplicada no cadastro.
+  if (novaSenha.length < 6) {
+    return response.status(400).json({ mensagem: 'A nova senha deve possuir pelo menos 6 caracteres.' });
+  }
+
+  try {
+    // O id vem do JWT validado pelo middleware, nunca do navegador.
+    const usuario = await get('SELECT id, senha_hash FROM usuarios WHERE id = ?', [request.usuario.id]);
+
+    if (!usuario) {
+      return response.status(404).json({ mensagem: 'Usuário não encontrado.' });
+    }
+
+    // bcrypt compara a senha digitada com o hash sem descriptografar nada.
+    const senhaAtualCorreta = await bcrypt.compare(senhaAtual, usuario.senha_hash);
+
+    if (!senhaAtualCorreta) {
+      return response.status(401).json({ mensagem: 'A senha atual está incorreta.' });
+    }
+
+    // Somente o novo hash é salvo; a senha em texto puro nunca vai para o banco.
+    const novaSenhaHash = await bcrypt.hash(novaSenha, 12);
+    await run(
+      'UPDATE usuarios SET senha_hash = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?',
+      [novaSenhaHash, request.usuario.id]
+    );
+
+    return response.json({ mensagem: 'Senha alterada com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao alterar senha:', error.message);
+    return response.status(500).json({ mensagem: 'Não foi possível alterar a senha.' });
+  }
+}
+
 // Exporta os controladores para o arquivo de rotas de usuários.
-module.exports = { cadastrar, entrar };
+module.exports = { cadastrar, entrar, alterarSenha };

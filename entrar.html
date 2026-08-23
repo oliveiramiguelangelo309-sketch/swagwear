@@ -48,10 +48,13 @@
         <input id="senha" name="senha" type="password" placeholder="Senha" autocomplete="current-password" required>
         <!-- campo de senha -->
 
-        <button type="submit">Entrar</button>
+        <button id="botaoLogin" type="submit">Entrar</button>
         <!-- botão -->
 
       </form>
+
+      <!-- Mensagens de erro e sucesso aparecem dentro do visual da SwagWear. -->
+      <div id="loginStatus" class="login-status" role="status" aria-live="polite"></div>
 
       <p class="login-link">
         Não tem conta? <a href="cadastro.html">Cadastrar</a>
@@ -60,6 +63,7 @@
     </div>
   </section>
 
+  <script src="account.js"></script>
   <script>
     /* Pega o formulário de login que já existia na página. */
     const formLogin = document.getElementById("formLogin");
@@ -70,6 +74,12 @@
 
       const email = document.getElementById("email").value.trim();
       const senha = document.getElementById("senha").value;
+      const status = document.getElementById("loginStatus");
+      const botao = document.getElementById("botaoLogin");
+
+      status.className = "login-status is-loading";
+      status.textContent = "Verificando seus dados...";
+      botao.disabled = true;
 
       try {
         /* A comparação da senha acontece no backend, nunca dentro deste HTML. */
@@ -80,18 +90,27 @@
         });
 
         const resultado = await resposta.json();
-        alert(resultado.mensagem);
 
-        /* Nesta etapa o login é validado; sessões seguras serão implementadas depois. */
         if (resposta.ok) {
           /* Guarda somente o token de autenticação; a senha nunca é armazenada no navegador. */
           localStorage.setItem("swagwear_token", resultado.token);
           localStorage.setItem("swagwear_usuario", JSON.stringify(resultado.usuario));
-          window.location.href = "index.html";
+          const primeiroNome = window.SwagWearAccount.primeiroNome(resultado.usuario.nome);
+          status.className = "login-status is-success";
+          status.innerHTML = `<strong>✓ Login realizado!</strong><span>Bem-vindo, ${primeiroNome}!</span><small>Entrando na sua conta...</small>`;
+
+          /* Um pequeno intervalo deixa o usuário ler a confirmação antes da Home. */
+          setTimeout(function () { window.location.href = "index.html"; }, 1300);
+          return;
         }
+        status.className = "login-status is-error";
+        status.textContent = resultado.mensagem;
       } catch (error) {
-        /* Informa de forma simples quando o backend não puder ser alcançado. */
-        alert("Não foi possível conectar ao servidor.");
+        status.className = "login-status is-error";
+        status.textContent = "Não foi possível conectar ao servidor.";
+      } finally {
+        /* No sucesso o redirecionamento já foi agendado; nos erros o botão volta a funcionar. */
+        if (!status.classList.contains("is-success")) botao.disabled = false;
       }
     });
   </script>

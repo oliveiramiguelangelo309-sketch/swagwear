@@ -274,7 +274,8 @@
       produtoImagem.src = imagem || "";
 
       btnComprar.href =
-        `pagamento.html?nome=${encodeURIComponent(nome || "Produto SwagWear")}` +
+        `pagamento.html?produto=${encodeURIComponent(produtoId || "")}` +
+        `&nome=${encodeURIComponent(nome || "Produto SwagWear")}` +
         `&preco=${encodeURIComponent(preco || "0")}` +
         `&imagem=${encodeURIComponent(imagem || "")}`;
 
@@ -415,6 +416,7 @@
     }
   </script>
 
+<script src="account.js"></script>
 </body>
 </html>
 
