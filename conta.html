@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minha Conta - SwagWear</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <h2>SWAGWEAR</h2>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="loja.html">Loja</a>
+      <a href="carrinho.html">Carrinho</a>
+      <a href="entrar.html">Entrar</a>
+      <a href="conta.html">Conta</a>
+    </nav>
+  </header>
+
+  <main class="conta-page">
+    <section id="contaBloqueada" class="conta-bloqueada" hidden>
+      <div class="conta-lock">!</div>
+      <h1>Você precisa entrar para acessar sua conta.</h1>
+      <p>Faça login para consultar seus pedidos e dados da SwagWear.</p>
+      <a class="conta-primary-button" href="entrar.html">Entrar</a>
+    </section>
+
+    <section id="contaConteudo" hidden>
+      <header class="conta-header">
+        <p class="produto-tag">ÁREA DO CLIENTE</p>
+        <h1>Minha conta</h1>
+        <p>Seu perfil, pedidos e rastreio reunidos em um só lugar.</p>
+      </header>
+
+      <nav class="conta-tabs" aria-label="Seções da conta">
+        <button type="button" data-tab="perfil">Perfil</button>
+        <button type="button" data-tab="pedidos">Pedidos feitos</button>
+        <button type="button" data-tab="confirmados">Pedidos pagos</button>
+        <button type="button" data-tab="carrinho">Carrinho</button>
+        <button type="button" data-tab="rastreio">Rastreio</button>
+        <button type="button" data-tab="senha">Alterar senha</button>
+      </nav>
+
+      <section id="tab-perfil" class="conta-panel">
+        <div class="perfil-card">
+          <div id="perfilAvatar" class="perfil-avatar"></div>
+          <div class="perfil-dados"><h2 id="perfilNome"></h2><p id="perfilEmail"></p></div>
+          <button id="btnSairConta" class="conta-logout-button" type="button">Sair da conta</button>
+        </div>
+      </section>
+
+      <section id="tab-pedidos" class="conta-panel" hidden>
+        <div class="conta-section-title"><div><h2>Pedidos feitos</h2><p>Todos os pedidos vinculados à sua conta, inclusive os pendentes.</p></div></div>
+        <div id="pedidosFeitos" class="conta-lista"><p>Carregando pedidos...</p></div>
+      </section>
+
+      <section id="tab-carrinho" class="conta-panel" hidden>
+        <div class="conta-section-title"><div><h2>Itens escolhidos</h2><p>Este conteúdo vem do mesmo carrinho salvo no navegador.</p></div><a href="carrinho.html">Ir para o carrinho</a></div>
+        <div id="contaCarrinho" class="conta-lista"></div>
+      </section>
+
+      <section id="tab-confirmados" class="conta-panel" hidden>
+        <div class="conta-section-title"><div><h2>Pedidos confirmados</h2><p>Pedidos pagos, enviados ou entregues consultados no banco.</p></div></div>
+        <div id="pedidosConfirmados" class="conta-lista"><p>Carregando pedidos...</p></div>
+      </section>
+
+      <section id="tab-rastreio" class="conta-panel" hidden>
+        <div class="conta-section-title"><div><h2>Rastreio demonstrativo</h2><p>As etapas são calculadas usando o status atual do pedido.</p></div></div>
+        <div id="contaRastreio" class="conta-lista"><p>Carregando rastreio...</p></div>
+      </section>
+
+      <section id="tab-senha" class="conta-panel" hidden>
+        <div class="senha-card">
+          <h2>Alterar senha</h2>
+          <p>A nova senha será transformada em hash pelo backend.</p>
+          <form id="formSenha">
+            <label>Senha atual<input id="senhaAtual" type="password" autocomplete="current-password" required></label>
+            <label>Nova senha<input id="novaSenha" type="password" minlength="6" autocomplete="new-password" required></label>
+            <label>Confirmar nova senha<input id="confirmarNovaSenha" type="password" minlength="6" autocomplete="new-password" required></label>
+            <button type="submit">Salvar nova senha</button>
+          </form>
+          <p id="mensagemSenha" class="conta-message" role="status"></p>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="account.js"></script>
+  <script>
+    /* A página usa a sessão centralizada em account.js. */
+    const sessao = window.SwagWearAccount.obterSessao();
+    const bloqueada = document.getElementById("contaBloqueada");
+    const conteudo = document.getElementById("contaConteudo");
+    let pedidosDoUsuario = [];
+
+    function formatarPreco(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function escaparTexto(valor) {
+      const elemento = document.createElement("span");
+      elemento.textContent = String(valor || "");
+      return elemento.innerHTML;
+    }
+
+    function abrirAba(nome) {
+      const abaValida = ["perfil", "pedidos", "carrinho", "confirmados", "rastreio", "senha"].includes(nome) ? nome : "perfil";
+      document.querySelectorAll(".conta-panel").forEach(painel => painel.hidden = true);
+      document.querySelectorAll(".conta-tabs button").forEach(botao => botao.classList.toggle("is-active", botao.dataset.tab === abaValida));
+      document.getElementById(`tab-${abaValida}`).hidden = false;
+      history.replaceState(null, "", `#${abaValida}`);
+    }
+
+    function renderizarCarrinho() {
+      // Lê exatamente a mesma chave usada por carrinho.html.
+      const carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+      const destino = document.getElementById("contaCarrinho");
+      if (!carrinho.length) {
+        destino.innerHTML = '<div class="conta-empty">Seu carrinho está vazio.</div>';
+        return;
+      }
+      destino.innerHTML = carrinho.map(item => `<article class="conta-item"><img src="${escaparTexto(item.imagem)}" alt=""><div><h3>${escaparTexto(item.nome || "Produto SwagWear")}</h3><p>Quantidade: ${Number(item.quantidade || 0)}</p></div><strong>${formatarPreco(Number(item.preco || 0) * Number(item.quantidade || 0))}</strong></article>`).join("");
+    }
+
+    function nomePagamento(valor) {
+      return ({ cartao: "Cartão", pix: "Pix", boleto: "Boleto" })[valor] || "Não informado";
+    }
+
+    /* Monta o mesmo card seguro para a lista completa e para os pedidos pagos. */
+    function cardPedido(pedido) {
+      return `<article class="pedido-card"><div class="pedido-top"><div><h3>Pedido #${pedido.id}</h3><p>${new Date(pedido.criado_em).toLocaleDateString("pt-BR")}</p></div><span class="pedido-status">${escaparTexto(pedido.status)}</span></div><p><strong>Total:</strong> ${formatarPreco(pedido.total)} · <strong>Pagamento:</strong> ${nomePagamento(pedido.forma_pagamento)}</p><div class="pedido-itens">${pedido.itens.map(item => `<span>${Number(item.quantidade)}× ${escaparTexto(item.nome)}</span>`).join("")}</div></article>`;
+    }
+
+    function renderizarPedidosFeitos() {
+      const destino = document.getElementById("pedidosFeitos");
+      destino.innerHTML = pedidosDoUsuario.length
+        ? pedidosDoUsuario.map(cardPedido).join("")
+        : '<div class="conta-empty">Você ainda não fez nenhum pedido.</div>';
+    }
+
+    function renderizarConfirmados() {
+      const confirmados = pedidosDoUsuario.filter(pedido => ["pago", "enviado", "entregue"].includes(pedido.status));
+      const destino = document.getElementById("pedidosConfirmados");
+      if (!confirmados.length) {
+        destino.innerHTML = '<div class="conta-empty">Você ainda não possui pedidos com pagamento confirmado.</div>';
+        return;
+      }
+      destino.innerHTML = confirmados.map(cardPedido).join("");
+    }
+
+    function renderizarRastreio() {
+      const destino = document.getElementById("contaRastreio");
+      const pedidosRastreaveis = pedidosDoUsuario.filter(pedido => pedido.status !== "cancelado");
+      if (!pedidosRastreaveis.length) {
+        destino.innerHTML = '<div class="conta-empty">Nenhum pedido disponível para rastreio.</div>';
+        return;
+      }
+      const etapas = ["Pagamento confirmado", "Preparando pedido", "Enviado", "Entregue"];
+      const completasPorStatus = { pendente: 0, pago: 1, enviado: 3, entregue: 4 };
+      destino.innerHTML = pedidosRastreaveis.map(pedido => `<article class="pedido-card"><h3>Pedido #${pedido.id}</h3><div class="tracking-steps">${etapas.map((etapa, indice) => `<div class="tracking-step ${indice < (completasPorStatus[pedido.status] || 0) ? "is-complete" : ""}"><span>${indice < (completasPorStatus[pedido.status] || 0) ? "✓" : "○"}</span><p>${etapa}</p></div>`).join("")}</div></article>`).join("");
+    }
+
+    async function carregarPedidos() {
+      try {
+        // O Bearer token permite que o backend descubra o usuário sem receber usuario_id.
+        const resposta = await fetch("/api/pedidos/meus", { headers: { "Authorization": `Bearer ${sessao.token}` } });
+        const resultado = await resposta.json();
+        if (!resposta.ok) throw new Error(resultado.mensagem || "Não foi possível carregar os pedidos.");
+        pedidosDoUsuario = resultado.pedidos || [];
+        renderizarPedidosFeitos();
+        renderizarConfirmados();
+        renderizarRastreio();
+      } catch (error) {
+        document.getElementById("pedidosFeitos").innerHTML = `<div class="conta-empty">${escaparTexto(error.message)}</div>`;
+        document.getElementById("pedidosConfirmados").innerHTML = `<div class="conta-empty">${escaparTexto(error.message)}</div>`;
+        document.getElementById("contaRastreio").innerHTML = `<div class="conta-empty">${escaparTexto(error.message)}</div>`;
+      }
+    }
+
+    if (!sessao) {
+      bloqueada.hidden = false;
+    } else {
+      conteudo.hidden = false;
+      document.getElementById("perfilAvatar").textContent = sessao.usuario.nome.charAt(0).toUpperCase();
+      document.getElementById("perfilNome").textContent = sessao.usuario.nome;
+      document.getElementById("perfilEmail").textContent = sessao.usuario.email;
+      renderizarCarrinho();
+      carregarPedidos();
+      abrirAba(location.hash.slice(1));
+    }
+
+    document.querySelectorAll(".conta-tabs button").forEach(botao => botao.addEventListener("click", () => abrirAba(botao.dataset.tab)));
+    window.addEventListener("hashchange", () => abrirAba(location.hash.slice(1)));
+
+    // O logout apaga apenas token e usuário; o carrinho continua preservado.
+    document.getElementById("btnSairConta").addEventListener("click", window.SwagWearAccount.sair);
+
+    document.getElementById("formSenha").addEventListener("submit", async function (event) {
+      event.preventDefault();
+      const mensagem = document.getElementById("mensagemSenha");
+      const senhaAtual = document.getElementById("senhaAtual").value;
+      const novaSenha = document.getElementById("novaSenha").value;
+      const confirmacao = document.getElementById("confirmarNovaSenha").value;
+      mensagem.className = "conta-message";
+      if (novaSenha !== confirmacao) {
+        mensagem.textContent = "A confirmação precisa ser igual à nova senha.";
+        mensagem.classList.add("is-error");
+        return;
+      }
+      try {
+        const resposta = await fetch("/api/usuarios/senha", { method: "PATCH", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${sessao.token}` }, body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha }) });
+        const resultado = await resposta.json();
+        mensagem.textContent = resultado.mensagem;
+        mensagem.classList.add(resposta.ok ? "is-success" : "is-error");
+        if (resposta.ok) event.target.reset();
+      } catch (error) {
+        mensagem.textContent = "Não foi possível conectar ao servidor.";
+        mensagem.classList.add("is-error");
+      }
+    });
+  </script>
+</body>
+</html>
