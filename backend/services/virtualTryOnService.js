@@ -3,7 +3,8 @@ const MODELO_IDM_VTON =
   'cuuupid/idm-vton:0513734a452173b8173e907e3a59d19a36266e55b48528559432bd21c7d7e985';
 
 const { gerarComHuggingFace } = require('./huggingFaceTryOnProvider');
-const PROVIDERS_VALIDOS = new Set(['mock', 'huggingface', 'replicate']);
+const { gerarComGemini } = require('./geminiTryOnProvider');
+const PROVIDERS_VALIDOS = new Set(['mock', 'huggingface', 'replicate', 'gemini']);
 
 // Mantem a leitura antiga isolada para projetos que ainda nao possuem TRYON_PROVIDER.
 function isLegacyTryOnMockEnabled() {
@@ -22,7 +23,7 @@ function getTryOnProvider() {
   }
 
   if (!PROVIDERS_VALIDOS.has(providerExplicito)) {
-    const error = new Error('TRYON_PROVIDER deve ser mock, huggingface ou replicate.');
+    const error = new Error('TRYON_PROVIDER deve ser mock, huggingface, replicate ou gemini.');
     error.code = 'TRYON_PROVIDER_INVALIDO';
     throw error;
   }
@@ -94,6 +95,11 @@ async function gerarProvadorVirtual({ fotoPessoa, imagemRoupa, categoria, descri
   if (provider === 'huggingface') {
     // Falhas do ZeroGPU voltam como erro controlado; nunca acionam Replicate.
     return gerarComHuggingFace({ fotoPessoa, imagemRoupa, categoria, descricao });
+  }
+
+  if (provider === 'gemini') {
+    // O Gemini (modelo de imagem "Nano Banana") recebe as duas fotos e edita a imagem diretamente.
+    return gerarComGemini({ fotoPessoa, imagemRoupa, categoria, descricao });
   }
 
   // Este bloco so e alcancado quando o provider escolhido e replicate.

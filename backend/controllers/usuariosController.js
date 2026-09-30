@@ -71,7 +71,7 @@ async function entrar(request, response) {
   try {
     // Procura a conta pelo email e traz o hash apenas para a comparação no servidor.
     const usuario = await get(
-      'SELECT id, nome, email, senha_hash FROM usuarios WHERE email = ?',
+      'SELECT id, nome, email, senha_hash, admin FROM usuarios WHERE email = ?',
       [email]
     );
 
@@ -86,16 +86,18 @@ async function entrar(request, response) {
       return response.status(401).json({ mensagem: 'Email ou senha incorretos.' });
     }
 
+    const admin = usuario.admin === 1 || usuario.admin === true;
+
     // O token identifica o usuário nas próximas requisições, como a criação de pedidos.
     const token = jwt.sign(
-      { id: usuario.id, nome: usuario.nome, email: usuario.email },
+      { id: usuario.id, nome: usuario.nome, email: usuario.email, admin },
       jwtSecret,
       { expiresIn: '8h' }
     );
 
     return response.json({
       mensagem: 'Login realizado com sucesso.',
-      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email },
+      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, admin },
       token
     });
   } catch (error) {

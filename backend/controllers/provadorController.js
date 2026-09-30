@@ -2,8 +2,13 @@ const { get } = require('../database');
 const {
   gerarProvadorVirtual,
   mapearCategoriaProvador,
-  isTryOnMockEnabled
+  isTryOnMockEnabled,
+  getTryOnProvider
 } = require('../services/virtualTryOnService');
+
+// Só o IDM-VTON (Hugging Face e Replicate) precisa da peça recortada sem fundo.
+// O Gemini edita a foto a partir da imagem comum do produto.
+const PROVIDERS_EXIGEM_SEM_FUNDO = new Set(['huggingface', 'replicate']);
 
 // Recebe a foto temporária e busca todos os dados confiáveis da roupa no SQLite.
 async function gerar(request, response) {
@@ -29,15 +34,16 @@ async function gerar(request, response) {
     }
 
     const mockAtivo = isTryOnMockEnabled();
+    const provider = getTryOnProvider();
 
-    // A IA real exige a imagem preparada da roupa para não gastar créditos com entrada inadequada.
-    if (!mockAtivo && !produto.imagem_sem_fundo) {
+    // O IDM-VTON exige a imagem preparada da roupa para não gastar créditos com entrada inadequada.
+    if (PROVIDERS_EXIGEM_SEM_FUNDO.has(provider) && !produto.imagem_sem_fundo) {
       return response.status(422).json({
         mensagem: 'Esta peça ainda não possui uma imagem preparada para o provador.'
       });
     }
 
-    // A imagem comum é aceita somente no mock, que não chama o provedor nem gasta créditos.
+    // A imagem comum é aceita no mock e no Gemini; os demais provedores já foram barrados acima.
     const imagemRoupa = produto.imagem_sem_fundo || produto.imagem;
     const categoriaIA = mapearCategoriaProvador(produto.tipo, produto.categoria);
 
@@ -59,7 +65,11 @@ async function gerar(request, response) {
   } catch (error) {
     console.error('Erro no provador virtual:', error.message);
 
-    if (['TOKEN_AUSENTE', 'HF_SPACE_AUSENTE', 'TRYON_PROVIDER_INVALIDO'].includes(error.code)) {
+    if (
+      ['TOKEN_AUSENTE', 'HF_SPACE_AUSENTE', 'TRYON_PROVIDER_INVALIDO', 'GEMINI_CHAVE_AUSENTE'].includes(
+        error.code
+      )
+    ) {
       return response.status(503).json({ mensagem: error.message });
     }
 
@@ -71,8 +81,14 @@ async function gerar(request, response) {
       return response.status(422).json({ mensagem: error.message });
     }
 
-    if (['ZERO_GPU_UNAVAILABLE', 'HF_SPACE_UNAVAILABLE'].includes(error.code)) {
+    if (
+      ['ZERO_GPU_UNAVAILABLE', 'HF_SPACE_UNAVAILABLE', 'GEMINI_QUOTA_EXCEDIDA'].includes(error.code)
+    ) {
       return response.status(503).json({ mensagem: error.message });
+    }
+
+    if (['GEMINI_CHAVE_INVALIDA', 'GEMINI_RESPOSTA_VAZIA'].includes(error.code)) {
+      return response.status(502).json({ mensagem: error.message });
     }
 
     return response.status(502).json({ mensagem: 'Não foi possível gerar a visualização agora.' });

@@ -1,8 +1,10 @@
 // jsonwebtoken verifica se o token foi realmente assinado pelo nosso backend.
 const jwt = require('jsonwebtoken');
 
-// No desenvolvimento local existe um valor padrão.
-// Antes de produção, JWT_SECRET deverá ser uma variável longa e secreta.
+if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET precisa estar definido em produção.');
+}
+
 const jwtSecret = process.env.JWT_SECRET || 'swagwear-local-development-secret';
 
 // Este middleware roda antes de rotas que precisam saber qual usuário está conectado.
@@ -23,4 +25,12 @@ function exigirAutenticacao(request, response, next) {
   }
 }
 
-module.exports = { exigirAutenticacao, jwtSecret };
+function exigirAdmin(request, response, next) {
+  if (!request.usuario || !request.usuario.admin) {
+    return response.status(403).json({ mensagem: 'Acesso restrito ao administrador.' });
+  }
+
+  return next();
+}
+
+module.exports = { exigirAutenticacao, exigirAdmin, jwtSecret };

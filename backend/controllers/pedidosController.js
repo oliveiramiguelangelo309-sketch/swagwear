@@ -1,5 +1,8 @@
 // Centraliza as consultas do pedido para que a rota continue pequena.
 const { run, get, all, transaction } = require('../database');
+const { gerarBoletoDemonstrativo } = require('../services/boletoService');
+const { gerarPixDemonstrativo } = require('../services/pixService');
+const { enviarEmailDemonstrativo } = require('../services/emailService');
 
 const formasPagamento = ['cartao', 'pix', 'boleto'];
 
@@ -188,4 +191,130 @@ async function confirmarPagamentoSimulado(request, response) {
   }
 }
 
-module.exports = { criarPedido, listarMeusPedidos, confirmarPagamentoSimulado };
+// Devolve a chave configurada somente ao usuário autenticado.
+// A chave fica no .env e não precisa ser escrita no HTML ou no Git.
+async function obterConfiguracaoPix(request, response) {
+  const chavePix = String(process.env.PIX_KEY || '').trim();
+
+  if (!chavePix) {
+    return response.status(503).json({ mensagem: 'A chave PIX demonstrativa não foi configurada.' });
+  }
+
+  return response.json({
+    chave: chavePix,
+    aviso: 'Pagamento demonstrativo para fins acadêmicos.'
+  });
+}
+
+// Prepara o PIX e o email antes de o botão demonstrativo mudar o pedido para pago.
+async function prepararPixDoPedido(request, response) {
+  const pedidoId = Number(request.params.id);
+  const chavePix = String(process.env.PIX_KEY || '').trim();
+
+  if (!Number.isInteger(pedidoId) || pedidoId <= 0) {
+    return response.status(400).json({ mensagem: 'Pedido inválido.' });
+  }
+
+  if (!chavePix) {
+    return response.status(503).json({ mensagem: 'A chave PIX demonstrativa não foi configurada.' });
+  }
+
+  try {
+    const pedido = await get(
+      `SELECT p.id, p.status, p.metodo_pagamento, p.total_centavos,
+              u.nome AS usuario_nome, u.email AS usuario_email
+       FROM pedidos p
+       INNER JOIN usuarios u ON u.id = p.usuario_id
+       WHERE p.id = ? AND p.usuario_id = ?`,
+      [pedidoId, request.usuario.id]
+    );
+
+    if (!pedido || pedido.status !== 'pendente' || pedido.metodo_pagamento !== 'pix') {
+      return response.status(404).json({ mensagem: 'Pedido pendente por PIX não encontrado.' });
+    }
+
+    const pix = gerarPixDemonstrativo({
+      pedidoId: pedido.id,
+      nome: pedido.usuario_nome,
+      email: pedido.usuario_email,
+      totalCentavos: pedido.total_centavos,
+      chavePix
+    });
+    const email = await enviarEmailDemonstrativo({
+      destinatario: pedido.usuario_email,
+      pedidoId: pedido.id,
+      assunto: `PIX demonstrativo SwagWear — pedido #${pedido.id}`,
+      html: pix.html
+    });
+
+    return response.json({
+      mensagem: email.simulado
+        ? 'Email PIX simulado com sucesso.'
+        : 'Instruções PIX enviadas por email.',
+      pix,
+      email: { modo: email.modo, simulado: email.simulado }
+    });
+  } catch (error) {
+    console.error('Erro ao preparar PIX demonstrativo:', error.message);
+    const status = error.code === 'EMAIL_NAO_CONFIGURADO' ? 503 : 500;
+    return response.status(status).json({ mensagem: error.message || 'Não foi possível preparar o PIX.' });
+  }
+}
+
+// Gera o boleto somente depois de confirmar que pedido e email pertencem ao JWT.
+async function gerarBoletoDoPedido(request, response) {
+  const pedidoId = Number(request.params.id);
+
+  if (!Number.isInteger(pedidoId) || pedidoId <= 0) {
+    return response.status(400).json({ mensagem: 'Pedido inválido.' });
+  }
+
+  try {
+    const pedido = await get(
+      `SELECT p.id, p.status, p.metodo_pagamento, p.total_centavos,
+              u.nome AS usuario_nome, u.email AS usuario_email
+       FROM pedidos p
+       INNER JOIN usuarios u ON u.id = p.usuario_id
+       WHERE p.id = ? AND p.usuario_id = ?`,
+      [pedidoId, request.usuario.id]
+    );
+
+    if (!pedido || pedido.status !== 'pendente' || pedido.metodo_pagamento !== 'boleto') {
+      return response.status(404).json({ mensagem: 'Pedido pendente por boleto não encontrado.' });
+    }
+
+    const boleto = gerarBoletoDemonstrativo({
+      pedidoId: pedido.id,
+      nome: pedido.usuario_nome,
+      email: pedido.usuario_email,
+      totalCentavos: pedido.total_centavos
+    });
+    const email = await enviarEmailDemonstrativo({
+      destinatario: pedido.usuario_email,
+      pedidoId: pedido.id,
+      assunto: `Boleto demonstrativo SwagWear — pedido #${pedido.id}`,
+      html: boleto.html
+    });
+
+    return response.json({
+      mensagem: email.simulado
+        ? 'Email de boleto simulado com sucesso.'
+        : 'Boleto demonstrativo enviado por email.',
+      boleto,
+      email: { modo: email.modo, simulado: email.simulado }
+    });
+  } catch (error) {
+    console.error('Erro ao gerar boleto demonstrativo:', error.message);
+    const status = error.code === 'EMAIL_NAO_CONFIGURADO' ? 503 : 500;
+    return response.status(status).json({ mensagem: error.message || 'Não foi possível gerar o boleto.' });
+  }
+}
+
+module.exports = {
+  criarPedido,
+  listarMeusPedidos,
+  confirmarPagamentoSimulado,
+  obterConfiguracaoPix,
+  prepararPixDoPedido,
+  gerarBoletoDoPedido
+};

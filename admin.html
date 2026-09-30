@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - SwagWear</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="navbar">
+    <h2>SWAGWEAR</h2>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="loja.html">Loja</a>
+      <a href="entrar.html">Entrar</a>
+      <a href="conta.html">Conta</a>
+    </nav>
+  </header>
+
+  <main class="conta-page">
+    <section id="adminBloqueada" class="conta-bloqueada" hidden>
+      <div class="conta-lock">!</div>
+      <h1>Acesso restrito ao administrador.</h1>
+      <p>Entre com uma conta de administrador para gerenciar os produtos.</p>
+      <a class="conta-primary-button" href="entrar.html">Entrar</a>
+    </section>
+
+    <section id="adminConteudo" hidden>
+      <header class="conta-header">
+        <p class="produto-tag">PAINEL ADMIN</p>
+        <h1>Produtos</h1>
+        <p>Crie, edite e ative ou desative peças do catálogo.</p>
+      </header>
+
+      <section class="admin-form-card">
+        <div class="conta-section-title">
+          <div>
+            <h2 id="formProdutoTitulo">Novo produto</h2>
+            <p>Preencha os dados da peça.</p>
+          </div>
+          <button id="btnCancelarEdicao" class="conta-logout-button" type="button" hidden>Cancelar edição</button>
+        </div>
+
+        <form id="formProduto" class="admin-form-grid">
+          <input type="hidden" id="produtoId">
+
+          <label>Nome
+            <input id="campoNome" required>
+          </label>
+
+          <label>Preço (R$)
+            <input id="campoPreco" type="number" min="0" step="0.01" required>
+          </label>
+
+          <label>Tipo
+            <input id="campoTipo" placeholder="camiseta, moletom, jaqueta, calca" required>
+          </label>
+
+          <label>Categoria
+            <input id="campoCategoria" placeholder="parte_superior ou parte_inferior" required>
+          </label>
+
+          <label>Cor
+            <input id="campoCor">
+          </label>
+
+          <label>Estilo
+            <input id="campoEstilo">
+          </label>
+
+          <label>Coleção
+            <input id="campoColecao">
+          </label>
+
+          <label>Estoque
+            <input id="campoEstoque" type="number" min="0" step="1" required>
+          </label>
+
+          <label class="admin-form-full">Imagem (URL)
+            <input id="campoImagem" type="url" required>
+          </label>
+
+          <label class="admin-form-full">Imagem sem fundo (URL, opcional)
+            <input id="campoImagemSemFundo" type="url">
+          </label>
+
+          <label class="admin-form-full">Descrição
+            <textarea id="campoDescricao" rows="2"></textarea>
+          </label>
+
+          <button type="submit" class="admin-form-full">Salvar produto</button>
+        </form>
+
+        <p id="mensagemProduto" class="conta-message" role="status"></p>
+      </section>
+
+      <section class="conta-panel">
+        <div class="conta-section-title">
+          <div>
+            <h2>Catálogo</h2>
+            <p>Todos os produtos, incluindo os inativos.</p>
+          </div>
+        </div>
+        <div id="listaProdutosAdmin" class="conta-lista"><p>Carregando produtos...</p></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="account.js"></script>
+  <script src="swag-assistant.js"></script>
+  <script>
+    const sessao = window.SwagWearAccount.obterSessao();
+    const bloqueada = document.getElementById("adminBloqueada");
+    const conteudo = document.getElementById("adminConteudo");
+    const listaProdutos = document.getElementById("listaProdutosAdmin");
+    const formProduto = document.getElementById("formProduto");
+    const mensagemProduto = document.getElementById("mensagemProduto");
+    const btnCancelarEdicao = document.getElementById("btnCancelarEdicao");
+    const formProdutoTitulo = document.getElementById("formProdutoTitulo");
+
+    const campos = {
+      nome: document.getElementById("campoNome"),
+      preco: document.getElementById("campoPreco"),
+      tipo: document.getElementById("campoTipo"),
+      categoria: document.getElementById("campoCategoria"),
+      cor: document.getElementById("campoCor"),
+      estilo: document.getElementById("campoEstilo"),
+      colecao: document.getElementById("campoColecao"),
+      estoque: document.getElementById("campoEstoque"),
+      imagem: document.getElementById("campoImagem"),
+      imagem_sem_fundo: document.getElementById("campoImagemSemFundo"),
+      descricao: document.getElementById("campoDescricao")
+    };
+
+    let produtos = [];
+
+    function formatarPreco(valor) {
+      return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    function limparFormulario() {
+      formProduto.reset();
+      document.getElementById("produtoId").value = "";
+      formProdutoTitulo.textContent = "Novo produto";
+      btnCancelarEdicao.hidden = true;
+    }
+
+    function preencherFormulario(produto) {
+      document.getElementById("produtoId").value = produto.id;
+      campos.nome.value = produto.nome || "";
+      campos.preco.value = produto.preco || 0;
+      campos.tipo.value = produto.tipo || "";
+      campos.categoria.value = produto.categoria || "";
+      campos.cor.value = produto.cor || "";
+      campos.estilo.value = produto.estilo || "";
+      campos.colecao.value = produto.colecao || "";
+      campos.estoque.value = produto.estoque || 0;
+      campos.imagem.value = produto.imagem || "";
+      campos.imagem_sem_fundo.value = produto.imagem_sem_fundo || "";
+      campos.descricao.value = produto.descricao || "";
+      formProdutoTitulo.textContent = `Editando: ${produto.nome}`;
+      btnCancelarEdicao.hidden = false;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function renderizarLista() {
+      if (!produtos.length) {
+        listaProdutos.innerHTML = '<div class="conta-empty">Nenhum produto cadastrado ainda.</div>';
+        return;
+      }
+
+      listaProdutos.innerHTML = "";
+
+      produtos.forEach((produto) => {
+        const item = document.createElement("article");
+        item.className = "admin-produto-item";
+        item.innerHTML = `
+          <img src="" alt="">
+          <div class="admin-produto-info">
+            <h3></h3>
+            <p></p>
+          </div>
+          <div class="admin-produto-acoes">
+            <span class="pedido-status"></span>
+            <button type="button" data-acao="editar">Editar</button>
+            <button type="button" data-acao="alternar"></button>
+          </div>`;
+
+        item.querySelector("img").src = produto.imagem || "";
+        item.querySelector("h3").textContent = produto.nome;
+        item.querySelector(".admin-produto-info p").textContent =
+          `${formatarPreco(produto.preco)} · estoque ${produto.estoque} · ${produto.colecao || "sem coleção"}`;
+
+        const status = item.querySelector(".pedido-status");
+        const ativo = produto.ativo === 1 || produto.ativo === true;
+        status.textContent = ativo ? "Ativo" : "Inativo";
+        status.classList.toggle("is-inativo", !ativo);
+
+        item.querySelector('[data-acao="alternar"]').textContent = ativo ? "Desativar" : "Ativar";
+
+        item.querySelector('[data-acao="editar"]').addEventListener("click", () => preencherFormulario(produto));
+        item.querySelector('[data-acao="alternar"]').addEventListener("click", () => alternarAtivo(produto));
+
+        listaProdutos.appendChild(item);
+      });
+    }
+
+    async function carregarProdutos() {
+      try {
+        const resposta = await fetch("/api/admin/produtos", {
+          headers: { Authorization: `Bearer ${sessao.token}` }
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) throw new Error(resultado.mensagem || "Não foi possível carregar os produtos.");
+
+        produtos = resultado;
+        renderizarLista();
+      } catch (error) {
+        listaProdutos.innerHTML = `<div class="conta-empty">${error.message}</div>`;
+      }
+    }
+
+    async function alternarAtivo(produto) {
+      const ativo = produto.ativo === 1 || produto.ativo === true;
+
+      try {
+        const resposta = await fetch(`/api/admin/produtos/${produto.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessao.token}` },
+          body: JSON.stringify({ ativo: !ativo })
+        });
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) throw new Error(resultado.mensagem || "Não foi possível atualizar o produto.");
+
+        await carregarProdutos();
+      } catch (error) {
+        mensagemProduto.className = "conta-message is-error";
+        mensagemProduto.textContent = error.message;
+      }
+    }
+
+    formProduto.addEventListener("submit", async function (event) {
+      event.preventDefault();
+
+      const produtoId = document.getElementById("produtoId").value;
+      const corpo = {
+        nome: campos.nome.value.trim(),
+        preco: Number(campos.preco.value),
+        tipo: campos.tipo.value.trim(),
+        categoria: campos.categoria.value.trim(),
+        cor: campos.cor.value.trim(),
+        estilo: campos.estilo.value.trim(),
+        colecao: campos.colecao.value.trim(),
+        estoque: Number(campos.estoque.value),
+        imagem: campos.imagem.value.trim(),
+        imagem_sem_fundo: campos.imagem_sem_fundo.value.trim(),
+        descricao: campos.descricao.value.trim()
+      };
+
+      mensagemProduto.className = "conta-message";
+
+      try {
+        const resposta = await fetch(
+          produtoId ? `/api/admin/produtos/${produtoId}` : "/api/admin/produtos",
+          {
+            method: produtoId ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${sessao.token}` },
+            body: JSON.stringify(corpo)
+          }
+        );
+        const resultado = await resposta.json();
+
+        if (!resposta.ok) throw new Error(resultado.mensagem || "Não foi possível salvar o produto.");
+
+        mensagemProduto.classList.add("is-success");
+        mensagemProduto.textContent = resultado.mensagem;
+        limparFormulario();
+        await carregarProdutos();
+      } catch (error) {
+        mensagemProduto.classList.add("is-error");
+        mensagemProduto.textContent = error.message;
+      }
+    });
+
+    btnCancelarEdicao.addEventListener("click", limparFormulario);
+
+    if (!sessao || !sessao.usuario.admin) {
+      bloqueada.hidden = false;
+    } else {
+      conteudo.hidden = false;
+      carregarProdutos();
+    }
+  </script>
+</body>
+</html>

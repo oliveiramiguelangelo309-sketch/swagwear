@@ -39,8 +39,6 @@
       <a href="loja.html">Loja</a>
       <!-- leva para a página da loja -->
 
-      <a href="ia.html">IA Looks</a>
-      
       <a href="#">Drops</a>
       <!-- link temporário; depois você pode trocar por uma página real -->
 
@@ -100,111 +98,7 @@
   <div class="carrossel-wrapper">
     <!-- área visível do carrossel -->
 
-    <div class="carrossel" id="carrosselProdutos">
-      <!-- trilho que vai deslizar -->
-
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=800&q=80" alt="Camiseta oversized preta">
-
-        <div class="info">
-          <span class="categoria">Drop 01</span>
-          <h3>Oversized Shadow Tee</h3>
-          <p>R$ 119</p>
-
-          <a
-            class="btn-card"
-            href="produto.html?produto=1"
-          >
-            Ver mais
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80" alt="Calça baggy preta">
-
-        <div class="info">
-          <span class="categoria">Drop 01</span>
-          <h3>Baggy Void Pants</h3>
-          <p>R$ 199</p>
-
-          <a
-            class="btn-card"
-            href="produto.html?nome=Baggy%20Void%20Pants&preco=199&imagem=https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format%26fit=crop%26w=800%26q=80"
-          >
-            Ver mais
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80" alt="Blusa streetwear roxa">
-
-        <div class="info">
-          <span class="categoria">Drop 02</span>
-          <h3>Neon Code Tee</h3>
-          <p>R$ 129</p>
-
-          <a
-            class="btn-card"
-            href="produto.html?nome=Neon%20Code%20Tee&preco=129&imagem=https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format%26fit=crop%26w=800%26q=80"
-          >
-            Ver mais
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format&fit=crop&w=800&q=80" alt="Calça cargo preta">
-
-        <div class="info">
-          <span class="categoria">Drop 02</span>
-          <h3>Future Cargo Black</h3>
-          <p>R$ 229</p>
-
-          <a
-            class="btn-card"
-            href="produto.html?nome=Future%20Cargo%20Black&preco=229&imagem=https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format%26fit=crop%26w=800%26q=80"
-          >
-            Ver mais
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&q=80" alt="Camiseta bege minimalista">
-
-        <div class="info">
-          <span class="categoria">Drop 03</span>
-          <h3>Raw Sand Tee</h3>
-          <p>R$ 99</p>
-
-          <a
-            class="btn-card"
-            href="produto.html?nome=Raw%20Sand%20Tee&preco=99&imagem=https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format%26fit=crop%26w=800%26q=80"
-          >
-            Ver mais
-          </a>
-        </div>
-      </div>
-
-      <div class="card">
-        <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=800&q=80" alt="Calça baggy bege">
-
-        <div class="info">
-          <span class="categoria">Drop 03</span>
-          <h3>Beige Drift Baggy</h3>
-          <p>R$ 189</p>
-           
-          <a
-            class="btn-card"
-            href="produto.html?nome=Beige%20Drift%20Baggy&preco=189&imagem=https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format%26fit=crop%26w=800%26q=80"
-          >
-            Ver mais
-          </a>
-        </div>
-      </div>
-    </div>
+    <div class="carrossel" id="carrosselProdutos"></div>
   </div>
 </section>
 
@@ -254,9 +148,62 @@
     animarScroll(-350);
     /* volta pra esquerda */
   }
+
+  const dropPorColecao = {
+    'Urban Pulse': 'Drop 01',
+    'Neon District': 'Drop 02',
+    'Raw Minimal': 'Drop 03'
+  };
+
+  const idsDestaque = [1, 5, 9, 14, 17, 21];
+
+  function formatarPrecoDestaque(valor) {
+    return `R$ ${Number(valor || 0).toLocaleString("pt-BR")}`;
+  }
+
+  function criarCardDestaque(produto) {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="" alt="">
+      <div class="info">
+        <span class="categoria"></span>
+        <h3></h3>
+        <p></p>
+        <a class="btn-card" href="produto.html?produto=${encodeURIComponent(produto.id)}">Ver mais</a>
+      </div>`;
+
+    const imagem = card.querySelector("img");
+    imagem.src = produto.imagem || "";
+    imagem.alt = produto.nome || "Produto SwagWear";
+    card.querySelector(".categoria").textContent = dropPorColecao[produto.colecao] || produto.colecao || "";
+    card.querySelector("h3").textContent = produto.nome;
+    card.querySelector(".info p").textContent = formatarPrecoDestaque(produto.preco);
+    return card;
+  }
+
+  async function carregarDestaques() {
+    try {
+      const resposta = await fetch("/api/produtos");
+      if (!resposta.ok) throw new Error("Não foi possível carregar os destaques.");
+
+      const produtos = await resposta.json();
+      const porId = new Map(produtos.map((produto) => [produto.id, produto]));
+
+      idsDestaque.forEach((id) => {
+        const produto = porId.get(id);
+        if (produto) carrossel.appendChild(criarCardDestaque(produto));
+      });
+    } catch (error) {
+      carrossel.innerHTML = `<p class="carrinho-aviso">${error.message}</p>`;
+    }
+  }
+
+  carregarDestaques();
 </script>
 
 <script src="account.js"></script>
+<script src="swag-assistant.js"></script>
 </body>
 </html>
 

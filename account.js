@@ -38,10 +38,51 @@
     return link;
   }
 
+  // Cria o botão hambúrguer uma única vez; o menu mobile reaproveita o mesmo <nav>.
+  function garantirNavToggle(navbar, nav) {
+    let botao = navbar.querySelector(".nav-toggle");
+    if (botao) return botao;
+
+    botao = document.createElement("button");
+    botao.type = "button";
+    botao.className = "nav-toggle";
+    botao.setAttribute("aria-label", "Abrir menu");
+    botao.setAttribute("aria-expanded", "false");
+    botao.textContent = "☰";
+
+    botao.addEventListener("click", function () {
+      const aberto = nav.classList.toggle("is-open");
+      botao.setAttribute("aria-expanded", String(aberto));
+      botao.textContent = aberto ? "✕" : "☰";
+    });
+
+    document.addEventListener("click", function (event) {
+      if (nav.classList.contains("is-open") && !navbar.contains(event.target)) {
+        nav.classList.remove("is-open");
+        botao.setAttribute("aria-expanded", "false");
+        botao.textContent = "☰";
+      }
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && nav.classList.contains("is-open")) {
+        nav.classList.remove("is-open");
+        botao.setAttribute("aria-expanded", "false");
+        botao.textContent = "☰";
+      }
+    });
+
+    navbar.appendChild(botao);
+    return botao;
+  }
+
   // Troca apenas os links de conta; os demais links existentes da loja são preservados.
   function atualizarNavbar() {
+    const navbar = document.querySelector(".navbar");
     const nav = document.querySelector(".navbar nav");
-    if (!nav) return;
+    if (!navbar || !nav) return;
+
+    garantirNavToggle(navbar, nav);
 
     nav.querySelectorAll("a").forEach(function (link) {
       const destino = (link.getAttribute("href") || "").split("?")[0].split("#")[0];
@@ -84,6 +125,10 @@
       criarLink("Rastreio", "conta.html#rastreio"),
       criarLink("Alterar senha", "conta.html#senha")
     );
+
+    if (sessao.usuario.admin) {
+      dropdown.appendChild(criarLink("Admin", "admin.html"));
+    }
 
     const botaoSair = document.createElement("button");
     botaoSair.type = "button";

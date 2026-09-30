@@ -87,6 +87,7 @@
   </main>
 
   <script src="account.js"></script>
+  <script src="swag-assistant.js"></script>
   <script>
     /* A página usa a sessão centralizada em account.js. */
     const sessao = window.SwagWearAccount.obterSessao();
@@ -156,9 +157,14 @@
         destino.innerHTML = '<div class="conta-empty">Nenhum pedido disponível para rastreio.</div>';
         return;
       }
-      const etapas = ["Pagamento confirmado", "Preparando pedido", "Enviado", "Entregue"];
       const completasPorStatus = { pendente: 0, pago: 1, enviado: 3, entregue: 4 };
-      destino.innerHTML = pedidosRastreaveis.map(pedido => `<article class="pedido-card"><h3>Pedido #${pedido.id}</h3><div class="tracking-steps">${etapas.map((etapa, indice) => `<div class="tracking-step ${indice < (completasPorStatus[pedido.status] || 0) ? "is-complete" : ""}"><span>${indice < (completasPorStatus[pedido.status] || 0) ? "✓" : "○"}</span><p>${etapa}</p></div>`).join("")}</div></article>`).join("");
+      destino.innerHTML = pedidosRastreaveis.map(pedido => {
+        // Um pedido pendente ainda não pode afirmar que o pagamento foi confirmado.
+        const primeiraEtapa = pedido.status === "pendente" ? "Aguardando pagamento" : "Pagamento confirmado";
+        const etapas = [primeiraEtapa, "Preparando pedido", "Enviado", "Entregue"];
+        const completas = completasPorStatus[pedido.status] || 0;
+        return `<article class="pedido-card"><h3>Pedido #${pedido.id}</h3><div class="tracking-steps">${etapas.map((etapa, indice) => `<div class="tracking-step ${indice < completas ? "is-complete" : ""}"><span>${indice < completas ? "✓" : "○"}</span><p>${etapa}</p></div>`).join("")}</div></article>`;
+      }).join("");
     }
 
     async function carregarPedidos() {

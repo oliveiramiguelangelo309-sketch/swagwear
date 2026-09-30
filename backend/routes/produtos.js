@@ -1,8 +1,13 @@
 // Cria as rotas de leitura do catálogo sem alterar os cards atuais da loja.
 const express = require('express');
-const { listar, buscarPorId } = require('../controllers/produtosController');
+const { listar, buscarPorId, listarAdmin, criar, atualizar } = require('../controllers/produtosController');
+const { exigirAutenticacao, exigirAdmin } = require('../middlewares/autenticacao');
 
 const router = express.Router();
+
+router.get('/admin/produtos', exigirAutenticacao, exigirAdmin, listarAdmin);
+router.post('/admin/produtos', exigirAutenticacao, exigirAdmin, criar);
+router.patch('/admin/produtos/:id', exigirAutenticacao, exigirAdmin, atualizar);
 
 // A rota com /:id vem depois da listagem e recebe um id pela URL.
 router.get('/produtos', listar);

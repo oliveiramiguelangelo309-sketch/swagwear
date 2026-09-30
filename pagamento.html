@@ -29,58 +29,84 @@
       <div class="pagamento-produtos">
         <p class="produto-tag">FINALIZAR COMPRA</p>
         <h1>Confira seu pedido</h1>
-        <p id="comprandoComo" class="comprando-como"></p>
+        <div class="comprando-como">
+          <strong>Comprando como <span id="compradorNome"></span></strong>
+          <span id="compradorEmail"></span>
+        </div>
         <div id="pagamentoItens" class="conta-lista"></div>
       </div>
 
       <aside class="pagamento-resumo">
         <h2>Pagamento demonstrativo</h2>
         <div class="carrinho-total-linha"><span>Total exibido</span><strong id="pagamentoTotal">R$ 0,00</strong></div>
-        <label for="formaPagamento">Forma de pagamento</label>
-        <select id="formaPagamento">
-          <option value="pix">Pix</option>
-          <option value="cartao">Cartão</option>
-          <option value="boleto">Boleto</option>
-        </select>
-        <button id="btnConfirmarPagamento" class="btn-provador" type="button">Confirmar pagamento simulado</button>
-        <p class="carrinho-aviso">Esta é uma simulação para a FECIP. Número de cartão, CVV e senha bancária não são solicitados nem armazenados.</p>
+
+        <div class="metodo-escolha" aria-label="Escolha a forma de pagamento">
+          <button class="metodo-card is-active" type="button" data-metodo="pix"><strong>PIX</strong><span>Confirmação acadêmica</span></button>
+          <button class="metodo-card" type="button" data-metodo="boleto"><strong>BOLETO</strong><span>Documento sem valor</span></button>
+        </div>
+
+        <section id="painelPix" class="metodo-painel">
+          <h3>Pagamento via PIX</h3>
+          <p>Valor: <strong class="valor-metodo">R$ 0,00</strong></p>
+          <p>Chave PIX:</p>
+          <div id="chavePix" class="codigo-demonstrativo">Carregando...</div>
+          <div id="qrPix" class="qr-demonstrativo" aria-label="QR Code demonstrativo"></div>
+          <p class="aviso-academico">Pagamento demonstrativo para fins acadêmicos. O botão não consulta bancos.</p>
+          <button id="btnConfirmarPix" class="btn-provador" type="button">Confirmar pagamento PIX</button>
+        </section>
+
+        <section id="painelBoleto" class="metodo-painel" hidden>
+          <h3>Pagamento por boleto</h3>
+          <p>Valor: <strong class="valor-metodo">R$ 0,00</strong></p>
+          <p class="aviso-academico">Boleto demonstrativo para apresentação acadêmica.</p>
+          <button id="btnGerarBoleto" class="btn-provador" type="button">Gerar boleto demonstrativo</button>
+
+          <div id="boletoGerado" class="boleto-gerado" hidden>
+            <p><strong>Pedido:</strong> <span id="boletoPedido"></span></p>
+            <p><strong>Vencimento:</strong> <span id="boletoVencimento"></span></p>
+            <p><strong>Código fictício:</strong></p>
+            <div id="boletoCodigo" class="codigo-demonstrativo"></div>
+            <p class="aviso-academico">Boleto demonstrativo — sem valor financeiro.</p>
+            <button id="btnBaixarBoleto" class="btn-provador-secundario" type="button">Baixar HTML do boleto</button>
+            <button id="btnPagarBoleto" class="btn-provador" type="button">Simular pagamento do boleto</button>
+          </div>
+        </section>
+
         <p id="mensagemPagamento" class="provador-mensagem" role="status" aria-live="polite"></p>
       </aside>
     </section>
   </main>
 
   <script src="account.js"></script>
+  <script src="swag-assistant.js"></script>
   <script>
-    /* O token JWT salvo no login identifica o comprador no backend. */
+    /* O JWT identifica o comprador; nome/email nunca são enviados como identidade do pedido. */
     const sessao = window.SwagWearAccount.obterSessao();
     const bloqueado = document.getElementById("pagamentoBloqueado");
     const conteudo = document.getElementById("pagamentoConteudo");
     const mensagem = document.getElementById("mensagemPagamento");
     const parametros = new URLSearchParams(location.search);
     const produtoDiretoId = Number(parametros.get("produto"));
-
-    // Comprar agora usa um produto; o fluxo do carrinho usa todos os itens salvos.
     const compraDireta = Number.isInteger(produtoDiretoId) && produtoDiretoId > 0;
     const itensVisuais = compraDireta
-      ? [{
-          produto_id: produtoDiretoId,
-          nome: parametros.get("nome") || "Produto SwagWear",
-          preco: Number(String(parametros.get("preco") || "0").replace(",", ".")),
-          imagem: parametros.get("imagem") || "",
-          quantidade: 1
-        }]
+      ? [{ produto_id: produtoDiretoId, nome: parametros.get("nome") || "Produto SwagWear", preco: Number(String(parametros.get("preco") || "0").replace(",", ".")), imagem: parametros.get("imagem") || "", quantidade: 1 }]
       : JSON.parse(localStorage.getItem("carrinho") || "[]");
+
+    let metodoAtual = "pix";
+    let boletoAtual = null;
+    let pedidoBoletoId = null;
+    let chavePixAtual = "";
 
     function formatarPreco(valor) {
       return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
+    const totalVisual = itensVisuais.reduce((soma, item) => soma + Number(item.preco || 0) * Number(item.quantidade || 0), 0);
+
     function renderizarItens() {
       const destino = document.getElementById("pagamentoItens");
       destino.innerHTML = "";
-
       itensVisuais.forEach(function (item) {
-        // Os dados visuais usam textContent para não interpretar nomes como HTML.
         const artigo = document.createElement("article");
         artigo.className = "conta-item";
         artigo.innerHTML = '<img src="" alt=""><div><h3></h3><p></p></div><strong></strong>';
@@ -91,65 +117,157 @@
         artigo.querySelector("strong").textContent = formatarPreco(Number(item.preco || 0) * Number(item.quantidade || 0));
         destino.appendChild(artigo);
       });
-
-      const total = itensVisuais.reduce((soma, item) => soma + Number(item.preco || 0) * Number(item.quantidade || 0), 0);
-      document.getElementById("pagamentoTotal").textContent = formatarPreco(total);
+      document.getElementById("pagamentoTotal").textContent = formatarPreco(totalVisual);
+      document.querySelectorAll(".valor-metodo").forEach(elemento => elemento.textContent = formatarPreco(totalVisual));
     }
+
+    // Desenha um padrão visual a partir do texto, mas não cria um QR bancário pagável.
+    function desenharQrDemonstrativo(texto) {
+      const destino = document.getElementById("qrPix");
+      destino.innerHTML = "";
+      let semente = 0;
+      for (const caractere of texto) semente = (semente * 31 + caractere.charCodeAt(0)) >>> 0;
+      for (let indice = 0; indice < 225; indice += 1) {
+        const ponto = document.createElement("span");
+        const ligado = ((semente >> (indice % 24)) ^ (indice * 13)) & 1;
+        if (ligado) ponto.className = "is-dark";
+        destino.appendChild(ponto);
+      }
+    }
+
+    async function carregarPix() {
+      const resposta = await fetch("/api/pagamentos/pix", {
+        headers: { "Authorization": `Bearer ${sessao.token}` }
+      });
+      const resultado = await resposta.json();
+      if (!resposta.ok) throw new Error(resultado.mensagem);
+      chavePixAtual = resultado.chave;
+      document.getElementById("chavePix").textContent = chavePixAtual;
+      desenharQrDemonstrativo(`SWAGWEAR-DEMO|${chavePixAtual}|${totalVisual}`);
+    }
+
+    // O servidor recalcula preço/estoque e obtém usuario_id exclusivamente do JWT.
+    async function criarPedido(metodo) {
+      const resposta = await fetch("/api/pedidos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${sessao.token}` },
+        body: JSON.stringify({
+          itens: itensVisuais.map(item => ({ produto_id: item.produto_id, quantidade: item.quantidade })),
+          forma_pagamento: metodo
+        })
+      });
+      const resultado = await resposta.json();
+      if (!resposta.ok) throw new Error(resultado.mensagem || "Não foi possível criar o pedido.");
+      return resultado.pedido;
+    }
+
+    async function confirmarComoPago(pedidoId) {
+      const resposta = await fetch(`/api/pedidos/${pedidoId}/pagamento`, {
+        method: "PATCH",
+        headers: { "Authorization": `Bearer ${sessao.token}` }
+      });
+      const resultado = await resposta.json();
+      if (!resposta.ok) throw new Error(resultado.mensagem || "Não foi possível confirmar o pagamento.");
+      return resultado;
+    }
+
+    function limparCarrinho() {
+      if (!compraDireta) localStorage.removeItem("carrinho");
+    }
+
+    document.querySelectorAll(".metodo-card").forEach(botao => {
+      botao.addEventListener("click", function () {
+        metodoAtual = this.dataset.metodo;
+        document.querySelectorAll(".metodo-card").forEach(item => item.classList.toggle("is-active", item === this));
+        document.getElementById("painelPix").hidden = metodoAtual !== "pix";
+        document.getElementById("painelBoleto").hidden = metodoAtual !== "boleto";
+        mensagem.textContent = "";
+      });
+    });
+
+    document.getElementById("btnConfirmarPix").addEventListener("click", async function () {
+      if (!sessao || !itensVisuais.length) return;
+      this.disabled = true;
+      mensagem.textContent = "Preparando PIX e confirmação demonstrativa...";
+      try {
+        const pedido = await criarPedido("pix");
+        // A rota PIX busca o email no banco e inclui a chave configurada na mensagem.
+        const respostaPix = await fetch(`/api/pedidos/${pedido.id}/pix`, {
+          method: "POST", headers: { "Authorization": `Bearer ${sessao.token}` }
+        });
+        const resultadoPix = await respostaPix.json();
+        if (!respostaPix.ok) throw new Error(resultadoPix.mensagem);
+        await confirmarComoPago(pedido.id);
+        limparCarrinho();
+        mensagem.innerHTML = `PIX demonstrativo confirmado! Pedido #${pedido.id} está pago. ${resultadoPix.mensagem} <a href="conta.html#confirmados">Ver pedidos pagos</a>`;
+      } catch (error) {
+        mensagem.textContent = error.message || "Não foi possível concluir o PIX.";
+        // Não repete automaticamente: um pedido pode ter sido criado como pendente.
+      }
+    });
+
+    document.getElementById("btnGerarBoleto").addEventListener("click", async function () {
+      if (!sessao || !itensVisuais.length || pedidoBoletoId) return;
+      this.disabled = true;
+      mensagem.textContent = "Gerando boleto demonstrativo...";
+      try {
+        const pedido = await criarPedido("boleto");
+        pedidoBoletoId = pedido.id;
+        const resposta = await fetch(`/api/pedidos/${pedido.id}/boleto`, {
+          method: "POST", headers: { "Authorization": `Bearer ${sessao.token}` }
+        });
+        const resultado = await resposta.json();
+        if (!resposta.ok) throw new Error(resultado.mensagem);
+        boletoAtual = resultado.boleto;
+        document.getElementById("boletoPedido").textContent = `#${boletoAtual.pedido_id}`;
+        document.getElementById("boletoVencimento").textContent = boletoAtual.vencimento;
+        document.getElementById("boletoCodigo").textContent = boletoAtual.codigo;
+        document.getElementById("boletoGerado").hidden = false;
+        limparCarrinho();
+        mensagem.textContent = `Pedido #${pedido.id} criado como pendente. ${resultado.mensagem}`;
+      } catch (error) {
+        mensagem.textContent = error.message || "Não foi possível gerar o boleto.";
+      }
+    });
+
+    document.getElementById("btnBaixarBoleto").addEventListener("click", function () {
+      if (!boletoAtual) return;
+      const arquivo = new Blob([boletoAtual.html], { type: "text/html;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(arquivo);
+      link.download = `swagwear-boleto-demo-${boletoAtual.pedido_id}.html`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+
+    document.getElementById("btnPagarBoleto").addEventListener("click", async function () {
+      if (!pedidoBoletoId) return;
+      this.disabled = true;
+      try {
+        await confirmarComoPago(pedidoBoletoId);
+        mensagem.innerHTML = `Pagamento do boleto simulado! Pedido #${pedidoBoletoId} está pago. <a href="conta.html#confirmados">Ver pedidos pagos</a>`;
+      } catch (error) {
+        mensagem.textContent = error.message || "Não foi possível simular o pagamento.";
+        this.disabled = false;
+      }
+    });
 
     if (!sessao) {
       bloqueado.hidden = false;
     } else if (!itensVisuais.length) {
       conteudo.hidden = false;
       mensagem.textContent = "Seu carrinho está vazio. Volte à loja para escolher uma peça.";
-      document.getElementById("btnConfirmarPagamento").disabled = true;
+      document.querySelectorAll(".metodo-painel button").forEach(botao => botao.disabled = true);
     } else {
       conteudo.hidden = false;
-      document.getElementById("comprandoComo").textContent = `Pedido associado à conta: ${sessao.usuario.email}`;
+      document.getElementById("compradorNome").textContent = sessao.usuario.nome;
+      document.getElementById("compradorEmail").textContent = sessao.usuario.email;
       renderizarItens();
+      carregarPix().catch(error => {
+        mensagem.textContent = error.message;
+        document.getElementById("btnConfirmarPix").disabled = true;
+      });
     }
-
-    document.getElementById("btnConfirmarPagamento").addEventListener("click", async function () {
-      if (!sessao || !itensVisuais.length) return;
-
-      const botao = this;
-      botao.disabled = true;
-      mensagem.textContent = "Criando e confirmando seu pedido...";
-
-      try {
-        // Não enviamos usuario_id: o backend obtém esse id depois de validar o JWT.
-        const respostaPedido = await fetch("/api/pedidos", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${sessao.token}`
-          },
-          body: JSON.stringify({
-            itens: itensVisuais.map(item => ({ produto_id: item.produto_id, quantidade: item.quantidade })),
-            forma_pagamento: document.getElementById("formaPagamento").value
-          })
-        });
-        const resultadoPedido = await respostaPedido.json();
-        if (!respostaPedido.ok) throw new Error(resultadoPedido.mensagem || "Não foi possível criar o pedido.");
-
-        // A segunda chamada muda apenas o status para pago na simulação da FECIP.
-        const respostaPagamento = await fetch(`/api/pedidos/${resultadoPedido.pedido.id}/pagamento`, {
-          method: "PATCH",
-          headers: { "Authorization": `Bearer ${sessao.token}` }
-        });
-        const resultadoPagamento = await respostaPagamento.json();
-
-        if (!respostaPagamento.ok) {
-          mensagem.textContent = `Pedido #${resultadoPedido.pedido.id} criado como pendente. ${resultadoPagamento.mensagem}`;
-          return;
-        }
-
-        if (!compraDireta) localStorage.removeItem("carrinho");
-        mensagem.innerHTML = `Pagamento confirmado! Pedido #${resultadoPedido.pedido.id}. <a href="conta.html#confirmados">Ver pedidos pagos</a>`;
-      } catch (error) {
-        mensagem.textContent = error.message || "Não foi possível conectar ao servidor.";
-        botao.disabled = false;
-      }
-    });
   </script>
 </body>
 </html>

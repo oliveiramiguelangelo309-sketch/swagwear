@@ -2,7 +2,10 @@ const express = require('express');
 const {
   criarPedido,
   listarMeusPedidos,
-  confirmarPagamentoSimulado
+  confirmarPagamentoSimulado,
+  obterConfiguracaoPix,
+  prepararPixDoPedido,
+  gerarBoletoDoPedido
 } = require('../controllers/pedidosController');
 const { exigirAutenticacao } = require('../middlewares/autenticacao');
 
@@ -16,5 +19,10 @@ router.get('/pedidos/meus', exigirAutenticacao, listarMeusPedidos);
 
 // Esta confirmação é apenas uma simulação da FECIP e nunca recebe cartão ou CVV.
 router.patch('/pedidos/:id/pagamento', exigirAutenticacao, confirmarPagamentoSimulado);
+
+// PIX e boleto usam o email e o usuário encontrados pelo JWT.
+router.get('/pagamentos/pix', exigirAutenticacao, obterConfiguracaoPix);
+router.post('/pedidos/:id/pix', exigirAutenticacao, prepararPixDoPedido);
+router.post('/pedidos/:id/boleto', exigirAutenticacao, gerarBoletoDoPedido);
 
 module.exports = router;

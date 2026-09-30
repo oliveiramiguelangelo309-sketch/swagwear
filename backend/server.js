@@ -14,6 +14,7 @@ const usuariosRoutes = require('./routes/usuarios');
 const produtosRoutes = require('./routes/produtos');
 const pedidosRoutes = require('./routes/pedidos');
 const provadorRoutes = require('./routes/provador');
+const assistenteRoutes = require('./routes/assistente');
 
 // Cria a aplicação Express e define a porta, permitindo uma configuração futura pelo ambiente.
 const app = express();
@@ -83,6 +84,7 @@ app.use('/api', usuariosRoutes);
 app.use('/api', produtosRoutes);
 app.use('/api', pedidosRoutes);
 app.use('/api', provadorRoutes);
+app.use('/api', assistenteRoutes);
 
 // Trata erros de upload e outros erros conhecidos sem mostrar detalhes internos ao navegador.
 app.use((error, request, response, next) => {
