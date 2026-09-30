@@ -1,7 +1,7 @@
 // gemini-2.0-flash foi desligado em 01/06/2026. GEMINI_MODELO_TEXTO permite trocar o modelo
 // pelo .env quando o Google aposentar este também, sem mexer no código.
 const MODELO_GEMINI = String(process.env.GEMINI_MODELO_TEXTO || '').trim() || 'gemini-3.8-flash';
-// Modelo mais leve usado só quando o principal está sobrecarregado (HTTP 503).
+// Modelo mais leve usado só quando o principal está sobrecarregado ou sem cota (HTTP 503/429).
 const MODELO_GEMINI_RESERVA = 'gemini-3.5-flash-lite';
 
 function urlDoModelo(modelo) {
@@ -54,9 +54,10 @@ async function responderComGemini({ mensagem, historico }) {
   let modeloUsado = MODELO_GEMINI;
   let resposta = await fetch(`${urlDoModelo(modeloUsado)}?key=${encodeURIComponent(apiKey)}`, requisicao);
 
-  // O Gemini devolve 503 em picos de demanda do modelo principal; o modelo leve de reserva
-  // costuma estar livre nesses momentos, então a pergunta é repetida nele uma vez.
-  if (resposta.status === 503 && modeloUsado !== MODELO_GEMINI_RESERVA) {
+  // O Gemini devolve 503 em picos de demanda e 429 quando a cota gratuita do modelo principal
+  // acaba (são só 20 pedidos no plano grátis). O modelo leve de reserva tem cota própria,
+  // então a pergunta é repetida nele uma vez.
+  if ([429, 503].includes(resposta.status) && modeloUsado !== MODELO_GEMINI_RESERVA) {
     modeloUsado = MODELO_GEMINI_RESERVA;
     resposta = await fetch(`${urlDoModelo(modeloUsado)}?key=${encodeURIComponent(apiKey)}`, requisicao);
   }

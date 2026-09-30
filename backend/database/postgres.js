@@ -5,6 +5,23 @@ const { Pool } = require('pg');
 const databaseType = 'postgres';
 const migrationPath = path.join(__dirname, 'migrations', 'postgres', '001_initial.sql');
 
+// O pooler do Supabase usa um certificado assinado pela CA própria do Supabase, que não está
+// na lista padrão do Node. DATABASE_SSL_CA aceita o conteúdo PEM do certificado (útil na
+// Vercel, onde "\n" pode vir escapado) ou o caminho de um arquivo .crt relativo à raiz do projeto.
+function lerCertificadoCa() {
+  const valor = String(process.env.DATABASE_SSL_CA || '').trim();
+
+  if (!valor) {
+    return undefined;
+  }
+
+  if (valor.startsWith('-----BEGIN')) {
+    return valor.replace(/\\n/g, '\n');
+  }
+
+  return fs.readFileSync(path.resolve(__dirname, '..', '..', valor), 'utf8');
+}
+
 // O Pool reaproveita conexões e é apropriado para APIs com várias requisições.
 // DATABASE_URL será fornecida pelo serviço PostgreSQL em produção.
 const pool = new Pool({
@@ -14,7 +31,8 @@ const pool = new Pool({
     : {
         // Em produção, o certificado do servidor deve ser validado por padrão.
         // Só use "false" explicitamente em um ambiente controlado com certificado próprio.
-        rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false'
+        rejectUnauthorized: process.env.DATABASE_SSL_REJECT_UNAUTHORIZED !== 'false',
+        ca: lerCertificadoCa()
       }
 });
 
