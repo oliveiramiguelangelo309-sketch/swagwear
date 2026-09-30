@@ -82,7 +82,12 @@ async function gerar(request, response) {
     }
 
     if (
-      ['ZERO_GPU_UNAVAILABLE', 'HF_SPACE_UNAVAILABLE', 'GEMINI_QUOTA_EXCEDIDA'].includes(error.code)
+      [
+        'ZERO_GPU_UNAVAILABLE',
+        'HF_SPACE_UNAVAILABLE',
+        'GEMINI_QUOTA_EXCEDIDA',
+        'GEMINI_SEM_COTA_GRATUITA'
+      ].includes(error.code)
     ) {
       return response.status(503).json({ mensagem: error.message });
     }

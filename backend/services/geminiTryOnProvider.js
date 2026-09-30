@@ -71,6 +71,16 @@ function normalizarErroGemini(error) {
 
   const message = String(error && error.message ? error.message : error).toLowerCase();
 
+  // "limit: 0" significa que o modelo não tem cota gratuita nenhuma nesta conta
+  // (os modelos de imagem do Gemini exigem faturamento ativo), não que ela acabou por hoje.
+  if (/limit: 0\b/.test(message)) {
+    return criarErroProvider(
+      'GEMINI_SEM_COTA_GRATUITA',
+      'O provador com Gemini exige faturamento ativo na conta do Google AI Studio.',
+      error
+    );
+  }
+
   if (/(quota|rate.?limit|resource.*exhausted|429)/.test(message)) {
     return criarErroProvider(
       'GEMINI_QUOTA_EXCEDIDA',

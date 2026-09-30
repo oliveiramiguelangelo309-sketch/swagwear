@@ -1,7 +1,12 @@
 // gemini-2.0-flash foi desligado em 01/06/2026. GEMINI_MODELO_TEXTO permite trocar o modelo
 // pelo .env quando o Google aposentar este também, sem mexer no código.
 const MODELO_GEMINI = String(process.env.GEMINI_MODELO_TEXTO || '').trim() || 'gemini-3.8-flash';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODELO_GEMINI}:generateContent`;
+// Modelo mais leve usado só quando o principal está sobrecarregado (HTTP 503).
+const MODELO_GEMINI_RESERVA = 'gemini-3.5-flash-lite';
+
+function urlDoModelo(modelo) {
+  return `https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`;
+}
 
 const INSTRUCAO_SISTEMA = `Você é a Swag, assistente virtual do site SwagWear (uma loja de streetwear feita como projeto de estudo/FECIP).
 Responda apenas perguntas relacionadas ao site: catálogo e produtos, coleções (Urban Pulse, Neon District, Raw Minimal), carrinho e pedidos, formas de pagamento simuladas (PIX e boleto demonstrativos, sem cartão real), cadastro e login, e o provador virtual com IA.
@@ -34,7 +39,7 @@ async function responderComGemini({ mensagem, historico }) {
     { role: 'user', parts: [{ text: mensagem }] }
   ];
 
-  const resposta = await fetch(`${GEMINI_URL}?key=${encodeURIComponent(apiKey)}`, {
+  const requisicao = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -44,7 +49,17 @@ async function responderComGemini({ mensagem, historico }) {
       // um teto baixo (400) podia terminar a resposta vazia. O tamanho curto vem da instrução.
       generationConfig: { maxOutputTokens: 2048, temperature: 0.4 }
     })
-  });
+  };
+
+  let modeloUsado = MODELO_GEMINI;
+  let resposta = await fetch(`${urlDoModelo(modeloUsado)}?key=${encodeURIComponent(apiKey)}`, requisicao);
+
+  // O Gemini devolve 503 em picos de demanda do modelo principal; o modelo leve de reserva
+  // costuma estar livre nesses momentos, então a pergunta é repetida nele uma vez.
+  if (resposta.status === 503 && modeloUsado !== MODELO_GEMINI_RESERVA) {
+    modeloUsado = MODELO_GEMINI_RESERVA;
+    resposta = await fetch(`${urlDoModelo(modeloUsado)}?key=${encodeURIComponent(apiKey)}`, requisicao);
+  }
 
   if (!resposta.ok) {
     const detalhe = await resposta.text().catch(() => '');
@@ -52,7 +67,7 @@ async function responderComGemini({ mensagem, historico }) {
     error.code = 'GEMINI_ERRO';
     error.detalhe = detalhe;
     // Registra o erro real da API (sem a chave) para facilitar a troca de modelo ou de chave.
-    console.error(`Gemini (${MODELO_GEMINI}) respondeu HTTP ${resposta.status}: ${detalhe.slice(0, 500)}`);
+    console.error(`Gemini (${modeloUsado}) respondeu HTTP ${resposta.status}: ${detalhe.slice(0, 500)}`);
     throw error;
   }
 
