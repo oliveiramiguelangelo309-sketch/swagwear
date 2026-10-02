@@ -154,92 +154,7 @@
       <!-- área visível do carrossel -->
 
       <div class="carrossel" id="carrosselRelacionados">
-        <!-- trilho que vai deslizar -->
-
-        <div class="card">
-          <img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=800&q=80" alt="Hoodie Urban Grey">
-
-          <div class="info">
-            <span class="categoria">Blusa</span>
-            <h3>Urban Grey Hoodie</h3>
-            <p>R$ 229</p>
-
-            <a
-              class="btn-card"
-              href="produto.html?nome=Urban%20Grey%20Hoodie&preco=229&imagem=https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format%26fit=crop%26w=800%26q=80"
-            >
-              Ver mais
-            </a>
-          </div>
-        </div>
-
-        <div class="card">
-          <img src="https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=800&q=80" alt="Baggy Void Pants">
-
-          <div class="info">
-            <span class="categoria">Calça</span>
-            <h3>Baggy Void Pants</h3>
-            <p>R$ 199</p>
-
-            <a
-              class="btn-card"
-              href="produto.html?nome=Baggy%20Void%20Pants&preco=199&imagem=https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format%26fit=crop%26w=800%26q=80"
-            >
-              Ver mais
-            </a>
-          </div>
-        </div>
-
-        <div class="card">
-          <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=800&q=80" alt="Neon Code Tee">
-
-          <div class="info">
-            <span class="categoria">Blusa</span>
-            <h3>Neon Code Tee</h3>
-            <p>R$ 129</p>
-
-            <a
-              class="btn-card"
-              href="produto.html?nome=Neon%20Code%20Tee&preco=129&imagem=https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format%26fit=crop%26w=800%26q=80"
-            >
-              Ver mais
-            </a>
-          </div>
-        </div>
-
-        <div class="card">
-          <img src="https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format&fit=crop&w=800&q=80" alt="Future Cargo Black">
-
-          <div class="info">
-            <span class="categoria">Calça</span>
-            <h3>Future Cargo Black</h3>
-            <p>R$ 229</p>
-
-            <a
-              class="btn-card"
-              href="produto.html?nome=Future%20Cargo%20Black&preco=229&imagem=https://images.unsplash.com/photo-1506629905607-d405b7a10db9?auto=format%26fit=crop%26w=800%26q=80"
-            >
-              Ver mais
-            </a>
-          </div>
-        </div>
-
-        <div class="card">
-          <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=800&q=80" alt="Raw Sand Tee">
-
-          <div class="info">
-            <span class="categoria">Blusa</span>
-            <h3>Raw Sand Tee</h3>
-            <p>R$ 99</p>
-
-            <a
-              class="btn-card"
-              href="produto.html?nome=Raw%20Sand%20Tee&preco=99&imagem=https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format%26fit=crop%26w=800%26q=80"
-            >
-              Ver mais
-            </a>
-          </div>
-        </div>
+        <!-- preenchido pelo script com outras peças do catálogo -->
       </div>
     </div>
   </section>
@@ -318,6 +233,48 @@
     }
 
     carregarProdutoDoBanco();
+
+    /* ================= VOCÊ TAMBÉM PODE CURTIR ================= */
+
+    /* Mostra outras peças do catálogo, priorizando o mesmo drop do produto aberto. */
+    async function carregarRelacionados() {
+      const destino = document.getElementById("carrosselRelacionados");
+
+      try {
+        const resposta = await fetch("/api/produtos");
+        if (!resposta.ok) throw new Error("Não foi possível carregar outras peças.");
+
+        const produtos = await resposta.json();
+        const atual = produtos.find((produto) => String(produto.id) === String(produtoId));
+        const outros = produtos.filter((produto) => String(produto.id) !== String(produtoId));
+        const mesmoDrop = outros.filter((produto) => atual && produto.colecao === atual.colecao);
+        const restantes = outros.filter((produto) => !mesmoDrop.includes(produto));
+
+        [...mesmoDrop, ...restantes].slice(0, 6).forEach((produto) => {
+          const card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <img src="" alt="">
+            <div class="info">
+              <span class="categoria">Blusa</span>
+              <h3></h3>
+              <p></p>
+              <a class="btn-card" href="produto.html?produto=${encodeURIComponent(produto.id)}">Ver mais</a>
+            </div>`;
+
+          const imagemCard = card.querySelector("img");
+          imagemCard.src = produto.imagem || "";
+          imagemCard.alt = produto.nome || "Produto SwagWear";
+          card.querySelector("h3").textContent = produto.nome;
+          card.querySelector(".info p").textContent = `R$ ${Number(produto.preco || 0).toLocaleString("pt-BR")}`;
+          destino.appendChild(card);
+        });
+      } catch (error) {
+        destino.innerHTML = `<p class="carrinho-aviso">${error.message}</p>`;
+      }
+    }
+
+    carregarRelacionados();
     /* inicia o carregamento assim que a página abre */
 
     /* ================= BOTÃO CARRINHO ================= */

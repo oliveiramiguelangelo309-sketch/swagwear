@@ -1,6 +1,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Pool } = require('pg');
+const { Pool, types } = require('pg');
+
+// O pg devolve BIGINT/BIGSERIAL (tipo 20) como texto, porque números muito grandes não cabem
+// num Number do JavaScript. Nossos ids são pequenos, e o frontend compara ids como número
+// (igual ao SQLite); sem isto, a vitrine da home não encontrava nenhum produto ("1" !== 1).
+types.setTypeParser(20, (valor) => Number.parseInt(valor, 10));
 
 const databaseType = 'postgres';
 const migrationPath = path.join(__dirname, 'migrations', 'postgres', '001_initial.sql');
