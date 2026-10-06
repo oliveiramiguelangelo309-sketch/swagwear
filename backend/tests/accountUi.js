@@ -93,32 +93,16 @@ async function executar() {
   const pedidoPix = await get("SELECT id, status FROM pedidos WHERE usuario_id = ? AND metodo_pagamento = 'pix'", [usuarioId]);
   confirmar(pedidoPix?.status === "pago", "O botão PIX não marcou o pedido como pago.");
 
-  // Cria também um boleto pendente e usa o botão separado para simular o pagamento.
-  await pagina.evaluate((produtoId) => {
-    localStorage.setItem("carrinho", JSON.stringify([{ produto_id: produtoId, nome: "Produto visual", preco: 99.9, imagem: "teste.png", quantidade: 1 }]));
-  }, produtoTesteId);
-  await pagina.goto(`${base}/pagamento.html`);
-  await pagina.click('[data-metodo="boleto"]');
-  await pagina.click("#btnGerarBoleto");
-  await pagina.waitForFunction(() => !document.querySelector("#boletoGerado")?.hidden);
-  confirmar((await pagina.locator("#boletoCodigo").textContent()).startsWith("DEMO."), "O boleto não mostrou código fictício.");
-  const pedidoBoleto = await get("SELECT id, status FROM pedidos WHERE usuario_id = ? AND metodo_pagamento = 'boleto'", [usuarioId]);
-  confirmar(pedidoBoleto?.status === "pendente", "O boleto não permaneceu pendente antes da simulação.");
-  await pagina.click("#btnPagarBoleto");
-  await pagina.waitForFunction(() => document.querySelector("#mensagemPagamento")?.textContent.includes("está pago"));
-  const boletoPago = await get("SELECT status FROM pedidos WHERE id = ?", [pedidoBoleto.id]);
-  confirmar(boletoPago?.status === "pago", "O botão do boleto não marcou o pedido como pago.");
-
   await pagina.goto(`${base}/conta.html#confirmados`);
-  await pagina.waitForFunction(() => document.querySelectorAll("#pedidosConfirmados .pedido-card").length >= 2);
+  await pagina.waitForFunction(() => document.querySelectorAll("#pedidosConfirmados .pedido-card").length >= 1);
   const confirmados = await pagina.locator("#pedidosConfirmados").textContent();
   confirmar(confirmados.includes(`Pedido #${pedidoPix.id}`), "O pedido PIX pago não apareceu na conta.");
-  confirmar(confirmados.includes(`Pedido #${pedidoBoleto.id}`), "O boleto pago não apareceu na conta.");
 
   // Repete a verificação em largura de celular e procura estouro horizontal.
   await pagina.setViewportSize({ width: 390, height: 844 });
   await pagina.goto(`${base}/pagamento.html`);
-  confirmar(await pagina.locator(".metodo-card").count() === 2, "As formas PIX e boleto sumiram no celular.");
+  confirmar(await pagina.locator("#painelPix").isVisible(), "O painel do PIX sumiu no celular.");
+  confirmar(await pagina.locator("#painelBoleto").count() === 0, "O boleto voltou a aparecer no pagamento.");
   const pagamentoEstourou = await pagina.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
   confirmar(!pagamentoEstourou, "O pagamento criou rolagem horizontal no celular.");
 
@@ -147,7 +131,7 @@ async function executar() {
   console.log("TELA CONTA EM DESKTOP: OK");
   console.log("PAGAMENTO IDENTIFICA USUÁRIO: OK");
   console.log("PIX CONFIRMA PEDIDO PAGO: OK");
-  console.log("BOLETO PENDENTE E PAGO: OK");
+  console.log("BOLETO FORA DO PAGAMENTO: OK");
   console.log("EMAIL DEMONSTRATIVO: MOCK");
   console.log("PEDIDOS PAGOS NA CONTA: OK");
   console.log("LOGOUT: OK");

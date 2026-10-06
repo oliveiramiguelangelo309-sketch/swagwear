@@ -140,8 +140,8 @@ async function executar() {
   });
   confirmar(pagamento.status === 200, `Pagamento PIX simulado retornou HTTP ${pagamento.status}.`);
 
-  // O boleto nasce pendente, gera documento fictício e só depois é confirmado manualmente.
-  const criacaoBoleto = await requisicao("/api/pedidos", {
+  // O boleto saiu do site: a API precisa recusar pedidos com essa forma de pagamento.
+  const tentativaBoleto = await requisicao("/api/pedidos", {
     method: "POST",
     headers: { Authorization: `Bearer ${token}` },
     body: JSON.stringify({
@@ -149,25 +149,7 @@ async function executar() {
       itens: [{ produto_id: produtoTesteId, quantidade: 1 }],
     }),
   });
-  confirmar(criacaoBoleto.status === 201, `Criação do boleto retornou HTTP ${criacaoBoleto.status}.`);
-  const pedidoBoleto = criacaoBoleto.corpo.pedido;
-
-  const boleto = await requisicao(`/api/pedidos/${pedidoBoleto.id}/boleto`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  confirmar(boleto.status === 200, `Geração do boleto retornou HTTP ${boleto.status}.`);
-  confirmar(boleto.corpo.email?.simulado === true, "O email de boleto não permaneceu em modo mock.");
-  confirmar(boleto.corpo.boleto?.codigo.startsWith("DEMO."), "O boleto não recebeu código fictício.");
-
-  const boletoPendente = await get("SELECT status FROM pedidos WHERE id = ?", [pedidoBoleto.id]);
-  confirmar(boletoPendente.status === "pendente", "O boleto foi marcado como pago antes do botão de simulação.");
-
-  const pagamentoBoleto = await requisicao(`/api/pedidos/${pedidoBoleto.id}/pagamento`, {
-    method: "PATCH",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  confirmar(pagamentoBoleto.status === 200, "A simulação de pagamento do boleto falhou.");
+  confirmar(tentativaBoleto.status === 400, `Pedido por boleto deveria ser recusado, mas retornou HTTP ${tentativaBoleto.status}.`);
 
   const pedidos = await requisicao("/api/pedidos/meus", {
     headers: { Authorization: `Bearer ${token}` },
@@ -176,10 +158,6 @@ async function executar() {
   confirmar(
     pedidos.corpo.pedidos?.some((item) => item.id === pedido.id && item.status === "pago"),
     "O pedido PIX confirmado do usuário não apareceu."
-  );
-  confirmar(
-    pedidos.corpo.pedidos?.some((item) => item.id === pedidoBoleto.id && item.status === "pago"),
-    "O boleto confirmado do usuário não apareceu."
   );
 
   const senhaErrada = await requisicao("/api/usuarios/senha", {
@@ -218,7 +196,7 @@ async function executar() {
   console.log("VÍNCULO PEDIDO/COMPRADOR: OK");
   console.log("PIX CONFIRMADO COMO PAGO: OK");
   console.log("EMAIL PIX EM MODO MOCK: OK");
-  console.log("BOLETO PENDENTE E CONFIRMADO: OK");
+  console.log("BOLETO RECUSADO (FORA DO SITE): OK");
   console.log("ISOLAMENTO ENTRE USUÁRIOS: OK");
   console.log("TROCA DE SENHA COM BCRYPT: OK");
   console.log("SUPABASE DE PRODUÇÃO ALTERADO: NÃO");

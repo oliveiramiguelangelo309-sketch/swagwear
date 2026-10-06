@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <!-- =============================================================================
      pagamento.html — finalizar a compra (pagamento DEMONSTRATIVO).
-     Mostra as peças, o total e duas formas de pagamento de mentira:
-       - PIX: cria o pedido e já o marca como pago (simulação);
-       - Boleto: cria o pedido pendente, gera um boleto sem valor e permite
-         simular o pagamento depois.
+     Mostra as peças, o total e o pagamento por PIX de mentira: ao confirmar,
+     cria o pedido e já o marca como pago (simulação).
      Pode receber as peças do carrinho ou de uma "compra direta" vinda da
      página de produto (pagamento.html?produto=3&nome=...&preco=...).
      ============================================================================= -->
@@ -54,16 +52,10 @@
         <div id="pagamentoItens" class="conta-lista"></div>
       </div>
 
-      <!-- coluna da direita: total e forma de pagamento -->
+      <!-- coluna da direita: total e pagamento por PIX -->
       <aside class="pagamento-resumo">
         <h2>Pagamento demonstrativo</h2>
         <div class="carrinho-total-linha"><span>Total exibido</span><strong id="pagamentoTotal">R$ 0,00</strong></div>
-
-        <!-- botões para escolher PIX ou boleto (data-metodo diz qual é qual) -->
-        <div class="metodo-escolha" aria-label="Escolha a forma de pagamento">
-          <button class="metodo-card is-active" type="button" data-metodo="pix"><strong>PIX</strong><span>Confirmação acadêmica</span></button>
-          <button class="metodo-card" type="button" data-metodo="boleto"><strong>BOLETO</strong><span>Documento sem valor</span></button>
-        </div>
 
         <!-- painel do PIX: chave, "QR code" ilustrativo e botão de confirmar -->
         <section id="painelPix" class="metodo-painel">
@@ -74,25 +66,6 @@
           <div id="qrPix" class="qr-demonstrativo" aria-label="QR Code demonstrativo"></div>
           <p class="aviso-academico">Pagamento demonstrativo para fins acadêmicos. O botão não consulta bancos.</p>
           <button id="btnConfirmarPix" class="btn-provador" type="button">Confirmar pagamento PIX</button>
-        </section>
-
-        <!-- painel do boleto (começa escondido) -->
-        <section id="painelBoleto" class="metodo-painel" hidden>
-          <h3>Pagamento por boleto</h3>
-          <p>Valor: <strong class="valor-metodo">R$ 0,00</strong></p>
-          <p class="aviso-academico">Boleto demonstrativo para apresentação acadêmica.</p>
-          <button id="btnGerarBoleto" class="btn-provador" type="button">Gerar boleto demonstrativo</button>
-
-          <!-- dados do boleto, que aparecem depois de gerar -->
-          <div id="boletoGerado" class="boleto-gerado" hidden>
-            <p><strong>Pedido:</strong> <span id="boletoPedido"></span></p>
-            <p><strong>Vencimento:</strong> <span id="boletoVencimento"></span></p>
-            <p><strong>Código fictício:</strong></p>
-            <div id="boletoCodigo" class="codigo-demonstrativo"></div>
-            <p class="aviso-academico">Boleto demonstrativo — sem valor financeiro.</p>
-            <button id="btnBaixarBoleto" class="btn-provador-secundario" type="button">Baixar HTML do boleto</button>
-            <button id="btnPagarBoleto" class="btn-provador" type="button">Simular pagamento do boleto</button>
-          </div>
         </section>
 
         <!-- mensagens de andamento, sucesso ou erro -->
@@ -127,9 +100,6 @@
       ? [{ produto_id: produtoDiretoId, nome: parametros.get("nome") || "Produto SwagWear", preco: Number(String(parametros.get("preco") || "0").replace(",", ".")), imagem: parametros.get("imagem") || "", quantidade: 1 }]
       : JSON.parse(localStorage.getItem("carrinho") || "[]");
 
-    let metodoAtual = "pix"; /* forma de pagamento escolhida */
-    let boletoAtual = null; /* dados do boleto gerado (para baixar) */
-    let pedidoBoletoId = null; /* id do pedido criado pelo boleto (evita criar dois) */
     let chavePixAtual = ""; /* chave PIX de demonstração vinda do servidor */
 
     /* Formata como dinheiro brasileiro: 149 -> "R$ 149,00". */
@@ -226,19 +196,6 @@
       if (!compraDireta) localStorage.removeItem("carrinho");
     }
 
-    /* ================= ESCOLHA PIX / BOLETO ================= */
-
-    /* Ao clicar num método: destaca o botão e mostra só o painel daquele método. */
-    document.querySelectorAll(".metodo-card").forEach(botao => {
-      botao.addEventListener("click", function () {
-        metodoAtual = this.dataset.metodo;
-        document.querySelectorAll(".metodo-card").forEach(item => item.classList.toggle("is-active", item === this));
-        document.getElementById("painelPix").hidden = metodoAtual !== "pix";
-        document.getElementById("painelBoleto").hidden = metodoAtual !== "boleto";
-        mensagem.textContent = "";
-      });
-    });
-
     /* ================= BOTÃO "CONFIRMAR PAGAMENTO PIX" ================= */
 
     document.getElementById("btnConfirmarPix").addEventListener("click", async function () {
@@ -261,64 +218,6 @@
       } catch (error) {
         mensagem.textContent = error.message || "Não foi possível concluir o PIX.";
         /* Não repete automaticamente: um pedido pode ter sido criado como pendente. */
-      }
-    });
-
-    /* ================= BOTÃO "GERAR BOLETO" ================= */
-
-    document.getElementById("btnGerarBoleto").addEventListener("click", async function () {
-      /* pedidoBoletoId preenchido = boleto já gerado; não cria outro pedido. */
-      if (!sessao || !itensVisuais.length || pedidoBoletoId) return;
-      this.disabled = true;
-      mensagem.textContent = "Gerando boleto demonstrativo...";
-      try {
-        /* 1) cria o pedido pendente */
-        const pedido = await criarPedido("boleto");
-        pedidoBoletoId = pedido.id;
-        /* 2) pede ao servidor os dados do boleto */
-        const resposta = await fetch(`/api/pedidos/${pedido.id}/boleto`, {
-          method: "POST", headers: { "Authorization": `Bearer ${sessao.token}` }
-        });
-        const resultado = await resposta.json();
-        if (!resposta.ok) throw new Error(resultado.mensagem);
-        /* 3) mostra os dados do boleto na tela */
-        boletoAtual = resultado.boleto;
-        document.getElementById("boletoPedido").textContent = `#${boletoAtual.pedido_id}`;
-        document.getElementById("boletoVencimento").textContent = boletoAtual.vencimento;
-        document.getElementById("boletoCodigo").textContent = boletoAtual.codigo;
-        document.getElementById("boletoGerado").hidden = false;
-        limparCarrinho();
-        mensagem.textContent = `Pedido #${pedido.id} criado como pendente. ${resultado.mensagem}`;
-      } catch (error) {
-        mensagem.textContent = error.message || "Não foi possível gerar o boleto.";
-      }
-    });
-
-    /* ================= BOTÃO "BAIXAR HTML DO BOLETO" ================= */
-
-    /* Cria um arquivo .html na memória (Blob) e força o download dele. */
-    document.getElementById("btnBaixarBoleto").addEventListener("click", function () {
-      if (!boletoAtual) return;
-      const arquivo = new Blob([boletoAtual.html], { type: "text/html;charset=utf-8" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(arquivo);
-      link.download = `swagwear-boleto-demo-${boletoAtual.pedido_id}.html`;
-      link.click();
-      /* Libera a memória usada pelo arquivo temporário. */
-      URL.revokeObjectURL(link.href);
-    });
-
-    /* ================= BOTÃO "SIMULAR PAGAMENTO DO BOLETO" ================= */
-
-    document.getElementById("btnPagarBoleto").addEventListener("click", async function () {
-      if (!pedidoBoletoId) return;
-      this.disabled = true;
-      try {
-        await confirmarComoPago(pedidoBoletoId);
-        mensagem.innerHTML = `Pagamento do boleto simulado! Pedido #${pedidoBoletoId} está pago. <a href="conta.html#confirmados">Ver pedidos pagos</a>`;
-      } catch (error) {
-        mensagem.textContent = error.message || "Não foi possível simular o pagamento.";
-        this.disabled = false; /* deu erro: libera o botão para tentar de novo */
       }
     });
 

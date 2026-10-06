@@ -2,7 +2,7 @@
 // routes/pedidos.js — rotas de pedidos e pagamentos demonstrativos.
 // -----------------------------------------------------------------------------
 // Todas exigem login, porque um pedido sempre pertence a um usuário.
-// Os pagamentos (PIX e boleto) são simulações acadêmicas: nada é cobrado.
+// O pagamento (PIX) é uma simulação acadêmica: nada é cobrado.
 // =============================================================================
 const express = require('express');
 const {
@@ -10,8 +10,7 @@ const {
   listarMeusPedidos,
   confirmarPagamentoSimulado,
   obterConfiguracaoPix,
-  prepararPixDoPedido,
-  gerarBoletoDoPedido
+  prepararPixDoPedido
 } = require('../controllers/pedidosController');
 const { exigirAutenticacao } = require('../middlewares/autenticacao');
 
@@ -33,8 +32,5 @@ router.get('/pagamentos/pix', exigirAutenticacao, obterConfiguracaoPix);
 
 // POST /api/pedidos/:id/pix — prepara o PIX demonstrativo de um pedido.
 router.post('/pedidos/:id/pix', exigirAutenticacao, prepararPixDoPedido);
-
-// POST /api/pedidos/:id/boleto — gera um boleto demonstrativo (sem valor real).
-router.post('/pedidos/:id/boleto', exigirAutenticacao, gerarBoletoDoPedido);
 
 module.exports = router;

@@ -1427,53 +1427,13 @@ form button {
   font: inherit;
 }
 
-/* botões PIX e BOLETO lado a lado */
-.metodo-escolha {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 22px 0;
-}
-
-/* botão de cada forma de pagamento */
-.metodo-card {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-  padding: 14px;
-  border: 1px solid #333;
-  border-radius: var(--raio);
-  color: #eee;
-  background: #171717;
-  text-align: left;
-  cursor: pointer;
-  transition: var(--transicao);
-}
-
-/* texto pequeno do botão */
-.metodo-card span {
-  color: #aaa;
-  font-size: 0.75rem;
-}
-
-/* valor dentro do botão */
-.metodo-card .valor-metodo {
-  color: var(--cor-marca-clara);
-  font-weight: 700;
-}
-
-/* forma de pagamento escolhida fica roxa */
-.metodo-card.is-active {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 1px #7c3aed;
-}
-
-/* painel do PIX ou do boleto */
+/* painel do PIX (margin-top separa do total, já que não há mais botões de escolha) */
 .metodo-painel {
+  margin-top: 22px;
   padding-top: 2px;
 }
 
-/* caixa com a chave PIX ou o código do boleto */
+/* caixa com a chave PIX */
 .codigo-demonstrativo {
   overflow-wrap: anywhere;
   padding: 12px;
@@ -1515,18 +1475,6 @@ form button {
   line-height: 1.5;
 }
 
-/* dados do boleto depois de gerado */
-.boleto-gerado {
-  display: grid;
-  gap: 10px;
-  margin-top: 18px;
-}
-
-/* botões de baixar e simular pagamento */
-.boleto-gerado button {
-  width: 100%;
-}
-
 /* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .pagamento-page, .pagamento-layout */
 @media (max-width: 768px) {
   .pagamento-page {
@@ -1538,12 +1486,8 @@ form button {
   }
 }
 
-/* AJUSTES PARA TELAS DE ATÉ 520PX (celular/tablet): .metodo-escolha, .qr-demonstrativo */
+/* AJUSTES PARA TELAS DE ATÉ 520PX (celular): "QR code" um pouco menor */
 @media (max-width: 520px) {
-  .metodo-escolha {
-    grid-template-columns: 1fr;
-  }
-
   .qr-demonstrativo {
     width: min(190px, 100%);
   }

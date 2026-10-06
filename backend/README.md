@@ -68,4 +68,4 @@ produto no SQLite, verifica o estoque e recalcula o total antes de criar o pedid
 
 ## Segurança de pagamento
 
-O banco registra apenas o tipo do pagamento (`cartao`, `pix` ou `boleto`). Número do cartão, validade e CVV não são armazenados. Em uma etapa futura, pagamentos reais deverão passar por um provedor especializado.
+O site aceita só PIX demonstrativo. O banco registra apenas o tipo do pagamento (`cartao`, `pix` ou, em pedidos antigos, `boleto`). Número do cartão, validade e CVV não são armazenados. Em uma etapa futura, pagamentos reais deverão passar por um provedor especializado.

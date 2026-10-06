@@ -1,18 +1,18 @@
 // =============================================================================
 // controllers/pedidosController.js — pedidos e pagamentos demonstrativos.
 // -----------------------------------------------------------------------------
-// Cria pedidos a partir do carrinho, lista os pedidos do usuário e prepara os
-// pagamentos de mentira (PIX e boleto) usados na apresentação da FECIP.
+// Cria pedidos a partir do carrinho, lista os pedidos do usuário e prepara o
+// pagamento de mentira (PIX) usado na apresentação da FECIP.
 // Todos os valores em dinheiro são guardados em CENTAVOS (14900 = R$ 149,00),
 // para evitar erros de arredondamento com números quebrados.
 // =============================================================================
 const { run, get, all, transaction } = require('../database');
-const { gerarBoletoDemonstrativo } = require('../services/boletoService');
 const { gerarPixDemonstrativo } = require('../services/pixService');
 const { enviarEmailDemonstrativo } = require('../services/emailService');
 
-// Formas de pagamento aceitas. "cartao" é só uma simulação: o número nunca é enviado.
-const formasPagamento = ['cartao', 'pix', 'boleto'];
+// Formas de pagamento aceitas em pedidos novos. "cartao" é só uma simulação (o número nunca é
+// enviado). O boleto saiu do site; pedidos antigos pagos por boleto continuam no banco.
+const formasPagamento = ['cartao', 'pix'];
 
 // -----------------------------------------------------------------------------
 // POST /api/pedidos — cria um pedido com os itens do carrinho.
@@ -309,64 +309,10 @@ async function prepararPixDoPedido(request, response) {
   }
 }
 
-// -----------------------------------------------------------------------------
-// POST /api/pedidos/:id/boleto — gera o boleto demonstrativo de um pedido.
-// Funciona igual ao PIX acima, mas para pedidos pagos por boleto.
-// -----------------------------------------------------------------------------
-// Gera o boleto somente depois de confirmar que pedido e email pertencem ao JWT.
-async function gerarBoletoDoPedido(request, response) {
-  const pedidoId = Number(request.params.id);
-
-  if (!Number.isInteger(pedidoId) || pedidoId <= 0) {
-    return response.status(400).json({ mensagem: 'Pedido inválido.' });
-  }
-
-  try {
-    const pedido = await get(
-      `SELECT p.id, p.status, p.metodo_pagamento, p.total_centavos,
-              u.nome AS usuario_nome, u.email AS usuario_email
-       FROM pedidos p
-       INNER JOIN usuarios u ON u.id = p.usuario_id
-       WHERE p.id = ? AND p.usuario_id = ?`,
-      [pedidoId, request.usuario.id]
-    );
-
-    if (!pedido || pedido.status !== 'pendente' || pedido.metodo_pagamento !== 'boleto') {
-      return response.status(404).json({ mensagem: 'Pedido pendente por boleto não encontrado.' });
-    }
-
-    const boleto = gerarBoletoDemonstrativo({
-      pedidoId: pedido.id,
-      nome: pedido.usuario_nome,
-      email: pedido.usuario_email,
-      totalCentavos: pedido.total_centavos
-    });
-    const email = await enviarEmailDemonstrativo({
-      destinatario: pedido.usuario_email,
-      pedidoId: pedido.id,
-      assunto: `Boleto demonstrativo SwagWear — pedido #${pedido.id}`,
-      html: boleto.html
-    });
-
-    return response.json({
-      mensagem: email.simulado
-        ? 'Email de boleto simulado com sucesso.'
-        : 'Boleto demonstrativo enviado por email.',
-      boleto,
-      email: { modo: email.modo, simulado: email.simulado }
-    });
-  } catch (error) {
-    console.error('Erro ao gerar boleto demonstrativo:', error.message);
-    const status = error.code === 'EMAIL_NAO_CONFIGURADO' ? 503 : 500;
-    return response.status(status).json({ mensagem: error.message || 'Não foi possível gerar o boleto.' });
-  }
-}
-
 module.exports = {
   criarPedido,
   listarMeusPedidos,
   confirmarPagamentoSimulado,
   obterConfiguracaoPix,
-  prepararPixDoPedido,
-  gerarBoletoDoPedido
+  prepararPixDoPedido
 };
