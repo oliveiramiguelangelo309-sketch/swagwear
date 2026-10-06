@@ -26,7 +26,7 @@ const DROP_02 = 'Corporation';
 module.exports = [
   camiseta({
     id: 1,
-    nome: 'Art Is My Life Baby Tee',
+    nome: 'Baby Tee Pincelada',
     preco: 139.0,
     descricao: 'Baby tee branca com a frase "Art Is My Life" pintada em aquarela colorida.',
     cor: 'branco',
@@ -35,7 +35,7 @@ module.exports = [
   }),
   camiseta({
     id: 2,
-    nome: 'Wild Horses Baby Tee',
+    nome: 'Baby Tee Cavalos Selvagens',
     preco: 139.0,
     descricao: 'Baby tee branca com três cavalos em verde, vermelho e azul com efeito desgastado.',
     cor: 'branco',
@@ -44,7 +44,7 @@ module.exports = [
   }),
   camiseta({
     id: 3,
-    nome: 'Swag Logo Baby Tee',
+    nome: 'Baby Tee Bala Rosa',
     preco: 149.0,
     descricao: 'Baby tee branca com o logo SwagWear Corporation em rosa, estrela amarela e marcas de tiro.',
     cor: 'branco',
@@ -53,7 +53,7 @@ module.exports = [
   }),
   camiseta({
     id: 4,
-    nome: 'Star Girls Baby Tee',
+    nome: 'Baby Tee Estrelas Gêmeas',
     preco: 149.0,
     descricao: 'Baby tee branca com duas silhuetas sobre estrelas rosa com efeito rachado.',
     cor: 'branco',
@@ -62,7 +62,7 @@ module.exports = [
   }),
   camiseta({
     id: 5,
-    nome: 'Rosary Tee',
+    nome: 'Tee Terço de Prata',
     preco: 129.0,
     descricao: 'Camiseta branca com estampa de terço prateado caindo do pescoço.',
     cor: 'branco',
@@ -71,7 +71,7 @@ module.exports = [
   }),
   camiseta({
     id: 6,
-    nome: 'SwagWear Script Tee',
+    nome: 'Tee Assinatura',
     preco: 119.0,
     descricao: 'Camiseta branca com "SwagWear" em letra cursiva cinza na lateral.',
     cor: 'branco',
@@ -80,7 +80,7 @@ module.exports = [
   }),
   camiseta({
     id: 7,
-    nome: 'Quinto Army Tee',
+    nome: 'Tee Águia Quinto',
     preco: 139.0,
     descricao: 'Camiseta branca com brasão de águia "Quinto Army" em cinza desgastado.',
     cor: 'branco',
@@ -89,7 +89,7 @@ module.exports = [
   }),
   camiseta({
     id: 8,
-    nome: 'Hate Normal People Tee',
+    nome: 'Tee Anti Normal',
     preco: 149.0,
     descricao: 'Camiseta branca com "Swag Wear - Hate normal people - Made in Brasil" em rosa, azul e amarelo.',
     cor: 'branco',
@@ -98,7 +98,7 @@ module.exports = [
   }),
   camiseta({
     id: 9,
-    nome: 'Basic Tee Branca',
+    nome: 'Tee Básica Neve',
     preco: 89.0,
     descricao: 'Camiseta básica branca com etiqueta SwagWear na gola.',
     cor: 'branco',
@@ -107,7 +107,7 @@ module.exports = [
   }),
   camiseta({
     id: 10,
-    nome: 'Basic Tee Preta',
+    nome: 'Tee Básica Asfalto',
     preco: 89.0,
     descricao: 'Camiseta básica preta com etiqueta SwagWear na gola.',
     cor: 'preto',
