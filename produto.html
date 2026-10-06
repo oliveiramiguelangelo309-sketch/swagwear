@@ -96,11 +96,6 @@
         Adicionar ao carrinho
       </button>
       <!-- botão que salva o produto no carrinho -->
-
-      <a id="btnProvador" class="btn-provador-produto" href="#">
-        ✦ Ver em mim
-      </a>
-      <!-- leva a peça atual para o Provador Virtual sem pedir outra seleção -->
     </div>
   </section>
 
@@ -180,7 +175,6 @@
     const produtoNome = document.getElementById("produtoNome");
     const produtoPreco = document.getElementById("produtoPreco");
     const produtoImagem = document.getElementById("produtoImagem");
-    const btnProvador = document.getElementById("btnProvador");
 
     /* Atualiza os dados visuais e os links sempre que o produto é carregado. */
     function atualizarProdutoNaPagina() {
@@ -193,13 +187,6 @@
         `&nome=${encodeURIComponent(nome || "Produto SwagWear")}` +
         `&preco=${encodeURIComponent(preco || "0")}` +
         `&imagem=${encodeURIComponent(imagem || "")}`;
-
-      /* Com id, o provador consultará a API; sem id, preserva os dados dos links antigos. */
-      btnProvador.href = produtoId
-        ? `provador.html?produto=${encodeURIComponent(produtoId)}`
-        : `provador.html?nome=${encodeURIComponent(nome || "")}` +
-          `&preco=${encodeURIComponent(preco || "")}` +
-          `&imagem=${encodeURIComponent(imagem || "")}`;
     }
 
     /* ================= BOTÃO COMPRAR ================= */

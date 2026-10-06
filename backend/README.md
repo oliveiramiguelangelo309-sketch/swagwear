@@ -31,7 +31,7 @@ executa rollback do pedido, dos itens e do estoque.
 O frontend usa URLs relativas como `/api/produtos`, funcionando no mesmo domínio em
 desenvolvimento e produção.
 
-Antes do deploy, configure `DATABASE_URL`, `JWT_SECRET`, `APP_ORIGIN` e as variáveis da IA
+Antes do deploy, configure `DATABASE_URL`, `JWT_SECRET`, `APP_ORIGIN` e a `GEMINI_API_KEY` do assistente
 no ambiente do Vercel. Execute a migration e o seed contra o PostgreSQL de produção como
 etapa controlada; o servidor não altera o schema automaticamente em cada cold start.
 
@@ -51,8 +51,6 @@ certificado CA fornecido pelo Supabase e mantenha a validação ativada.
 - `routes/usuarios.js`: define as rotas `/api/cadastro` e `/api/login`.
 - `routes/produtos.js`: define as rotas de consulta do catálogo.
 - `routes/pedidos.js`: cria pedidos autenticados e recalcula preços pelo banco.
-- `routes/provador.js`: recebe uma foto temporária com limite de 5 MB.
-- `services/virtualTryOnService.js`: concentra modo mock, categorias e Replicate.
 
 ## Rotas disponíveis
 
@@ -61,18 +59,6 @@ certificado CA fornecido pelo Supabase e mantenha a validação ativada.
 - `GET /api/produtos`: lista os produtos ativos.
 - `GET /api/produtos/:id`: busca um produto ativo pelo id.
 - `POST /api/pedidos`: cria pedido e itens usando um token Bearer.
-- `POST /api/provador`: recebe `foto` e `produto_id` como FormData.
-
-## Provador virtual local
-
-Sem configuração adicional, o projeto usa `TRYON_MOCK=true` por padrão. Nesse modo,
-nenhuma API externa é chamada e a própria foto enviada volta como resultado simulado.
-
-Para preparar um teste real, copie `.env.example` para `.env`, coloque seu token apenas
-no arquivo local e acrescente `TRYON_MOCK=false`. Nunca coloque o token no HTML.
-
-O upload usa memória RAM e aceita uma imagem JPG, PNG ou WEBP de até 5 MB. A foto não é
-gravada no SQLite, no disco nem no `localStorage`.
 
 ## Autenticação e pedidos
 

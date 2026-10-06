@@ -13,7 +13,6 @@ const { checkDatabase, databaseType } = require('./database');
 const usuariosRoutes = require('./routes/usuarios');
 const produtosRoutes = require('./routes/produtos');
 const pedidosRoutes = require('./routes/pedidos');
-const provadorRoutes = require('./routes/provador');
 const assistenteRoutes = require('./routes/assistente');
 
 // Cria a aplicação Express e define a porta, permitindo uma configuração futura pelo ambiente.
@@ -83,18 +82,10 @@ app.get('/api/status', (request, response) => {
 app.use('/api', usuariosRoutes);
 app.use('/api', produtosRoutes);
 app.use('/api', pedidosRoutes);
-app.use('/api', provadorRoutes);
 app.use('/api', assistenteRoutes);
 
-// Trata erros de upload e outros erros conhecidos sem mostrar detalhes internos ao navegador.
+// Trata erros conhecidos sem mostrar detalhes internos ao navegador.
 app.use((error, request, response, next) => {
-  if (error && error.code === 'LIMIT_FILE_SIZE') {
-    // Multer identifica o excesso antes do controller e nenhuma IA e chamada.
-    return response.status(413).json({
-      mensagem: 'A imagem é muito grande. Envie uma foto de até 4 MB.'
-    });
-  }
-
   if (error) {
     console.error('Erro tratado pelo servidor:', error.message);
     return response.status(400).json({ mensagem: error.message || 'Requisição inválida.' });

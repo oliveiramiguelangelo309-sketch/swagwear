@@ -186,7 +186,7 @@
     let historico = lerHistorico();
 
     if (historico.length === 0) {
-      historico = [{ role: "model", text: "Oi! Eu sou a Swag. Posso ajudar com produtos, pedidos, pagamento ou o provador virtual." }];
+      historico = [{ role: "model", text: "Oi! Eu sou a Swag. Posso ajudar com produtos, pedidos ou pagamento." }];
       salvarHistorico(historico);
     }
 
