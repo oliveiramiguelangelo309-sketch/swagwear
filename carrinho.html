@@ -1,12 +1,22 @@
 <!DOCTYPE html>
+<!-- =============================================================================
+     carrinho.html — página do carrinho de compras.
+     O carrinho fica salvo no navegador (localStorage, chave "carrinho").
+     Aqui dá para mudar quantidades, remover peças e seguir para o pagamento.
+     ============================================================================= -->
 <html lang="pt-BR">
 <head>
+  <!-- acentos e caracteres especiais em português -->
   <meta charset="UTF-8">
+  <!-- faz a página se ajustar à largura do celular -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- título da aba do navegador -->
   <title>Carrinho - SwagWear</title>
+  <!-- estilo visual compartilhado por todas as páginas -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- barra de navegação; os links de conta são ajustados pelo account.js -->
   <header class="navbar">
     <h2>SWAGWEAR</h2>
     <nav>
@@ -18,6 +28,7 @@
   </header>
 
   <main class="carrinho-page">
+    <!-- título da página -->
     <div class="carrinho-cabecalho">
       <p class="produto-tag">SEU CARRINHO</p>
       <h1>Peças escolhidas</h1>
@@ -25,8 +36,10 @@
     </div>
 
     <div class="carrinho-layout">
+      <!-- lista de peças: preenchida pelo JavaScript (aria-live avisa leitores de tela quando muda) -->
       <section id="listaCarrinho" class="carrinho-lista" aria-live="polite"></section>
 
+      <!-- caixa lateral com o total e o botão de pagamento -->
       <aside class="carrinho-resumo">
         <h2>Resumo</h2>
         <div class="carrinho-total-linha">
@@ -34,33 +47,42 @@
           <strong id="carrinhoTotal">R$ 0,00</strong>
         </div>
 
+        <!-- segue para a página de pagamento -->
         <button id="btnFinalizarPedido" class="btn-provador" type="button">
           Ir para pagamento
         </button>
 
+        <!-- link "Entrar", que só aparece se a pessoa tentar pagar sem estar logada -->
         <a id="entrarParaFinalizar" class="btn-provador-secundario" href="entrar.html" hidden>Entrar</a>
 
         <p class="carrinho-aviso">
           O backend recalcula os preços usando o banco. Nenhum dado de cartão é armazenado.
         </p>
+        <!-- mensagens de aviso (ex.: "Entre na sua conta...") -->
         <p id="mensagemCarrinho" class="provador-mensagem" role="status"></p>
       </aside>
     </div>
   </main>
 
   <script>
-    /* O carrinho continua no localStorage para preservar o comportamento atual do projeto. */
+    /* ================= DADOS DO CARRINHO ================= */
+
+    /* Lê o carrinho salvo no navegador. Cada item tem: produto_id, nome, preco, imagem e quantidade.
+       Se ainda não houver carrinho, começa com uma lista vazia. */
     let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
 
+    /* Partes da página que o script atualiza. */
     const listaCarrinho = document.getElementById("listaCarrinho");
     const carrinhoTotal = document.getElementById("carrinhoTotal");
     const mensagemCarrinho = document.getElementById("mensagemCarrinho");
 
+    /* Salva o carrinho no navegador e redesenha a lista. */
     function salvarCarrinho() {
       localStorage.setItem("carrinho", JSON.stringify(carrinho));
       renderizarCarrinho();
     }
 
+    /* Formata como dinheiro brasileiro: 149 -> "R$ 149,00". */
     function formatarPreco(valor) {
       return Number(valor || 0).toLocaleString("pt-BR", {
         style: "currency",
@@ -68,10 +90,13 @@
       });
     }
 
+    /* ================= DESENHA O CARRINHO ================= */
+
     /* Desenha novamente os itens sempre que quantidade ou remoção mudar. */
     function renderizarCarrinho() {
       listaCarrinho.innerHTML = "";
 
+      /* Carrinho vazio: mostra um aviso com link para a loja. */
       if (carrinho.length === 0) {
         listaCarrinho.innerHTML = `
           <div class="carrinho-vazio">
@@ -80,6 +105,8 @@
           </div>`;
       }
 
+      /* Um bloco para cada peça. "indice" é a posição da peça na lista,
+         guardada nos botões (data-indice) para saber em qual peça clicaram. */
       carrinho.forEach((item, indice) => {
         const artigo = document.createElement("article");
         artigo.className = "carrinho-item";
@@ -105,6 +132,8 @@
         listaCarrinho.appendChild(artigo);
       });
 
+      /* Total só para exibir: preço x quantidade de cada peça.
+         O valor que vale de verdade é recalculado pelo servidor ao criar o pedido. */
       const totalVisual = carrinho.reduce(
         (total, item) => total + Number(item.preco || 0) * Number(item.quantidade || 0),
         0
@@ -112,8 +141,11 @@
       carrinhoTotal.textContent = formatarPreco(totalVisual);
     }
 
+    /* ================= BOTÕES − / ＋ / REMOVER ================= */
+
     /* Um único listener atende todos os botões criados dinamicamente. */
     listaCarrinho.addEventListener("click", function (event) {
+      /* Descobre se o clique foi num botão com data-acao (ou dentro dele). */
       const botao = event.target.closest("button[data-acao]");
       if (!botao) return;
 
@@ -121,12 +153,17 @@
       const acao = botao.dataset.acao;
 
       if (acao === "aumentar") carrinho[indice].quantidade += 1;
+      /* A quantidade nunca fica menor que 1; para tirar a peça, use "Remover". */
       if (acao === "diminuir" && carrinho[indice].quantidade > 1) carrinho[indice].quantidade -= 1;
+      /* splice tira 1 item da lista na posição "indice". */
       if (acao === "remover") carrinho.splice(indice, 1);
       salvarCarrinho();
     });
 
+    /* ================= IR PARA O PAGAMENTO ================= */
+
     document.getElementById("btnFinalizarPedido").addEventListener("click", function () {
+      /* Só quem está logado pode fazer pedido. */
       const token = localStorage.getItem("swagwear_token");
 
       if (!token) {
@@ -146,13 +183,16 @@
         return;
       }
 
-      // A página de pagamento fará o POST autenticado depois da confirmação visual.
+      /* A página de pagamento fará o POST autenticado depois da confirmação visual. */
       window.location.href = "pagamento.html";
     });
 
+    /* Desenha o carrinho assim que a página abre. */
     renderizarCarrinho();
   </script>
+<!-- menu de conta na barra de navegação -->
 <script src="account.js"></script>
+<!-- chat da assistente Swag -->
 <script src="swag-assistant.js"></script>
 </body>
 </html>

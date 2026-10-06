@@ -1,16 +1,25 @@
 <!DOCTYPE html>
+<!-- =============================================================================
+     loja.html — página da Loja: mostra todas as camisetas, separadas por drop.
+     Os cards são montados pelo JavaScript no final, com os dados de /api/produtos.
+     ============================================================================= -->
 <html lang="pt-BR">
 <head>
+  <!-- acentos e caracteres especiais em português -->
   <meta charset="UTF-8">
+  <!-- título que aparece na aba do navegador -->
   <title>Loja - SwagWear</title>
 
+  <!-- estilo visual compartilhado por todas as páginas -->
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
+  <!-- marcador do topo da página (destino do botão "Voltar ao topo") -->
   <div id="topo"></div>
 
+  <!-- barra de navegação; os links de conta são ajustados pelo account.js -->
   <header class="navbar">
     <h2>SWAGWEAR</h2>
 
@@ -21,6 +30,7 @@
     </nav>
   </header>
 
+  <!-- faixa de abertura da loja -->
   <section class="hero-loja">
     <div class="overlay-loja">
       <p class="mini-tag">STREETWEAR CONTEMPORÂNEO</p>
@@ -31,26 +41,36 @@
     </div>
   </section>
 
+  <!-- aqui o JavaScript coloca uma seção para cada drop, com seus cards -->
   <div id="colecoesLoja"></div>
 
+  <!-- botão flutuante que rola a página de volta ao topo -->
   <button id="topoBtn" class="btn-topo">
     ↑ Voltar ao topo
   </button>
 
   <script>
+    /* ================= TEXTOS DE CADA DROP ================= */
+
+    /* O nome do drop vem do banco (coluna "colecao"); aqui ficam a etiqueta e a descrição. */
     const colecoesInfo = {
       'Baby Tee': { tag: 'DROP 01', texto: 'Baby tees de corte ajustado, com estampas coloridas e cheias de atitude.' },
       'Corporation': { tag: 'DROP 02', texto: 'Camisetas de corte reto da linha SwagWear Corporation, das básicas às estampadas.' }
     };
 
+    /* ================= FUNÇÕES DE APOIO ================= */
+
+    /* Formata o preço no padrão brasileiro: 149 -> "R$ 149". */
     function formatarPreco(valor) {
       return `R$ ${Number(valor || 0).toLocaleString("pt-BR")}`;
     }
 
+    /* Texto pequeno acima do nome no card ("Calça" para parte de baixo, "Blusa" para o resto). */
     function categoriaVisivel(produto) {
       return produto.categoria === 'parte_inferior' ? 'Calça' : 'Blusa';
     }
 
+    /* Cria o card de uma camiseta: foto, categoria, nome, preço e botão "Ver mais". */
     function criarCard(produto) {
       const card = document.createElement("div");
       card.className = "card";
@@ -63,6 +83,8 @@
           <a class="btn-card" href="produto.html?produto=${encodeURIComponent(produto.id)}">Ver mais</a>
         </div>`;
 
+      /* Os dados entram com textContent/src, nunca dentro do innerHTML,
+         para um texto do banco nunca virar código HTML na página. */
       const imagem = card.querySelector("img");
       imagem.src = produto.imagem || "";
       imagem.alt = produto.nome || "Produto SwagWear";
@@ -72,6 +94,9 @@
       return card;
     }
 
+    /* ================= MONTA A LOJA ================= */
+
+    /* Busca as camisetas na API, agrupa por drop e cria uma seção para cada drop. */
     async function carregarLoja() {
       const destino = document.getElementById("colecoesLoja");
 
@@ -80,6 +105,8 @@
         if (!resposta.ok) throw new Error("Não foi possível carregar os produtos.");
 
         const produtos = await resposta.json();
+
+        /* Map: nome do drop -> lista de camisetas daquele drop (na ordem em que chegam). */
         const porColecao = new Map();
 
         produtos.forEach((produto) => {
@@ -88,11 +115,14 @@
           porColecao.get(nomeColecao).push(produto);
         });
 
+        /* Limpa a área antes de desenhar. */
         destino.innerHTML = "";
 
         porColecao.forEach((itensColecao, nomeColecao) => {
+          /* Drop sem texto cadastrado em colecoesInfo fica com etiqueta e descrição vazias. */
           const info = colecoesInfo[nomeColecao] || { tag: "", texto: "" };
 
+          /* Seção do drop: cabeçalho (etiqueta, nome, descrição) + grade de cards. */
           const secao = document.createElement("section");
           secao.className = "colecao";
           secao.innerHTML = `
@@ -107,31 +137,39 @@
           secao.querySelector("h2").textContent = nomeColecao;
           secao.querySelector(".colecao-topo > p:last-child").textContent = info.texto;
 
+          /* Coloca um card para cada camiseta do drop. */
           const grid = secao.querySelector(".grid-loja");
           itensColecao.forEach((produto) => grid.appendChild(criarCard(produto)));
 
           destino.appendChild(secao);
         });
       } catch (error) {
+        /* Se a API falhar, mostra o aviso no lugar dos cards. */
         destino.innerHTML = `<p class="carrinho-aviso">${error.message}</p>`;
       }
     }
 
+    /* Começa a carregar assim que a página abre. */
     carregarLoja();
 
+    /* ================= BOTÃO "VOLTAR AO TOPO" ================= */
+
     const topoBtn = document.getElementById("topoBtn");
-    let subindo = false;
-    let scrollTimer = null;
+    let subindo = false; /* true enquanto a animação de subida estiver acontecendo */
+    let scrollTimer = null; /* guarda o próximo passo da animação, para poder cancelar */
 
     topoBtn.addEventListener("click", function () {
-      if (subindo) return;
+      if (subindo) return; /* evita começar duas animações ao mesmo tempo */
       subindo = true;
       subirSuave();
     });
 
+    /* Sobe a página aos poucos: cada passo anda 1/18 da distância que falta (mínimo 10px),
+       a cada 15 milissegundos, o que dá um efeito de desaceleração no final. */
     function subirSuave() {
       const atual = window.scrollY;
 
+      /* Chegou no topo: termina a animação. */
       if (atual <= 0) {
         window.scrollTo(0, 0);
         subindo = false;
@@ -144,6 +182,7 @@
       scrollTimer = setTimeout(subirSuave, 15);
     }
 
+    /* Se a pessoa usar a rodinha do mouse durante a subida, cancela a animação. */
     window.addEventListener("wheel", function () {
       if (subindo) {
         clearTimeout(scrollTimer);
@@ -152,6 +191,7 @@
       }
     });
 
+    /* No celular, tocar na tela também cancela a animação. */
     window.addEventListener("touchstart", function () {
       if (subindo) {
         clearTimeout(scrollTimer);
@@ -161,7 +201,9 @@
     });
   </script>
 
+  <!-- menu de conta na barra de navegação -->
   <script src="account.js"></script>
+  <!-- chat da assistente Swag -->
   <script src="swag-assistant.js"></script>
 </body>
 

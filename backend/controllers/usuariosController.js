@@ -1,53 +1,64 @@
-// bcryptjs transforma senhas em hashes e compara senhas sem revelar o valor original.
+// =============================================================================
+// controllers/usuariosController.js — cadastro, login e troca de senha.
+// =============================================================================
+
+// bcryptjs transforma a senha num "hash": um código embaralhado que não dá para
+// desfazer. O banco guarda só o hash; no login, comparamos a senha com ele.
 const bcrypt = require('bcryptjs');
 
-// Estas funções permitem consultar e alterar o SQLite usando async/await.
+// Funções do banco: get = busca uma linha, run = insere/altera.
 const { get, run } = require('../database');
+
+// jsonwebtoken cria o token de login; jwtSecret é a chave que assina o token.
 const jwt = require('jsonwebtoken');
 const { jwtSecret } = require('../middlewares/autenticacao');
 
-// Express executa esta função quando o frontend envia POST /api/cadastro.
+// -----------------------------------------------------------------------------
+// POST /api/cadastro — cria uma conta nova.
+// -----------------------------------------------------------------------------
 async function cadastrar(request, response) {
-  // Lê os dados enviados pelo formulário e remove espaços desnecessários.
+  // Lê o formulário. trim() tira espaços nas pontas; o email vai em minúsculas
+  // para "Ana@x.com" e "ana@x.com" serem a mesma conta.
   const nome = String(request.body.nome || '').trim();
   const email = String(request.body.email || '').trim().toLowerCase();
   const senha = String(request.body.senha || '');
 
-  // O backend valida novamente, pois dados enviados pelo navegador podem ser manipulados.
+  // O backend valida de novo, porque o navegador pode ser manipulado.
   if (!nome || !email || !senha) {
     return response.status(400).json({ mensagem: 'Nome, email e senha são obrigatórios.' });
   }
 
-  // Esta expressão faz uma validação básica do formato do email.
+  // Confere o formato básico "algo@algo.algo".
   const emailPareceValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   if (!emailPareceValido) {
     return response.status(400).json({ mensagem: 'Informe um email válido.' });
   }
 
-  // Uma senha mínima reduz o risco de contas protegidas por senhas muito fáceis.
+  // Senha mínima de 6 caracteres, para evitar senhas fáceis demais.
   if (senha.length < 6) {
     return response.status(400).json({ mensagem: 'A senha deve possuir pelo menos 6 caracteres.' });
   }
 
   try {
-    // Verifica o email antes da inserção para devolver uma mensagem amigável.
+    // Confere se o email já tem conta, para dar uma mensagem amigável.
     const usuarioExistente = await get('SELECT id FROM usuarios WHERE email = ?', [email]);
 
     if (usuarioExistente) {
+      // 409 = conflito: já existe uma conta com este email.
       return response.status(409).json({ mensagem: 'Este email já está cadastrado.' });
     }
 
-    // O número 12 define o custo do hash: mais seguro que salvar a senha pura.
+    // Gera o hash da senha. O 12 é o "custo": quanto maior, mais difícil de quebrar.
     const senhaHash = await bcrypt.hash(senha, 12);
 
-    // Os pontos de interrogação evitam que o texto do usuário seja interpretado como SQL.
+    // Os "?" são preenchidos com segurança, sem o texto virar comando SQL.
     const resultado = await run(
       'INSERT INTO usuarios (nome, email, senha_hash) VALUES (?, ?, ?)',
       [nome, email, senhaHash]
     );
 
-    // Nunca devolvemos senha nem hash para o navegador.
+    // 201 = criado. Nunca devolvemos a senha nem o hash ao navegador.
     return response.status(201).json({
       mensagem: 'Cadastro realizado com sucesso.',
       usuario: { id: resultado.id, nome, email }
@@ -58,9 +69,11 @@ async function cadastrar(request, response) {
   }
 }
 
-// Express executa esta função quando o frontend envia POST /api/login.
+// -----------------------------------------------------------------------------
+// POST /api/login — confere email e senha e devolve um token de acesso.
+// -----------------------------------------------------------------------------
 async function entrar(request, response) {
-  // Normaliza o email e mantém a senha exatamente como foi digitada.
+  // O email é normalizado; a senha fica exatamente como foi digitada.
   const email = String(request.body.email || '').trim().toLowerCase();
   const senha = String(request.body.senha || '');
 
@@ -69,35 +82,37 @@ async function entrar(request, response) {
   }
 
   try {
-    // Procura a conta pelo email e traz o hash apenas para a comparação no servidor.
+    // Busca a conta pelo email. O hash só é usado aqui no servidor, para comparar.
     const usuario = await get(
-      'SELECT id, nome, email, senha_hash, admin FROM usuarios WHERE email = ?',
+      'SELECT id, nome, email, senha_hash FROM usuarios WHERE email = ?',
       [email]
     );
 
-    // A mesma mensagem cobre email inexistente e senha incorreta, reduzindo exposição de contas.
+    // A mesma mensagem serve para "email não existe" e "senha errada",
+    // assim ninguém descobre quais emails têm conta.
     if (!usuario) {
       return response.status(401).json({ mensagem: 'Email ou senha incorretos.' });
     }
 
+    // Compara a senha digitada com o hash salvo.
     const senhaCorreta = await bcrypt.compare(senha, usuario.senha_hash);
 
     if (!senhaCorreta) {
       return response.status(401).json({ mensagem: 'Email ou senha incorretos.' });
     }
 
-    const admin = usuario.admin === 1 || usuario.admin === true;
-
-    // O token identifica o usuário nas próximas requisições, como a criação de pedidos.
+    // Cria o token que identifica o usuário nas próximas requisições
+    // (por exemplo, ao finalizar um pedido). Ele vale por 8 horas.
     const token = jwt.sign(
-      { id: usuario.id, nome: usuario.nome, email: usuario.email, admin },
+      { id: usuario.id, nome: usuario.nome, email: usuario.email },
       jwtSecret,
       { expiresIn: '8h' }
     );
 
+    // O navegador guarda o token e os dados básicos (veja account.js).
     return response.json({
       mensagem: 'Login realizado com sucesso.',
-      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email, admin },
+      usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email },
       token
     });
   } catch (error) {
@@ -106,7 +121,9 @@ async function entrar(request, response) {
   }
 }
 
-// Altera a senha somente do usuário identificado pelo token JWT.
+// -----------------------------------------------------------------------------
+// PATCH /api/usuarios/senha — troca a senha de quem está logado.
+// -----------------------------------------------------------------------------
 async function alterarSenha(request, response) {
   const senhaAtual = String(request.body.senha_atual || '');
   const novaSenha = String(request.body.nova_senha || '');
@@ -115,27 +132,27 @@ async function alterarSenha(request, response) {
     return response.status(400).json({ mensagem: 'Preencha a senha atual e a nova senha.' });
   }
 
-  // Usa a mesma regra simples já aplicada no cadastro.
+  // Mesma regra do cadastro: pelo menos 6 caracteres.
   if (novaSenha.length < 6) {
     return response.status(400).json({ mensagem: 'A nova senha deve possuir pelo menos 6 caracteres.' });
   }
 
   try {
-    // O id vem do JWT validado pelo middleware, nunca do navegador.
+    // O id do usuário vem do token (já conferido pelo middleware), nunca do navegador.
     const usuario = await get('SELECT id, senha_hash FROM usuarios WHERE id = ?', [request.usuario.id]);
 
     if (!usuario) {
       return response.status(404).json({ mensagem: 'Usuário não encontrado.' });
     }
 
-    // bcrypt compara a senha digitada com o hash sem descriptografar nada.
+    // Só deixa trocar se a senha atual estiver certa.
     const senhaAtualCorreta = await bcrypt.compare(senhaAtual, usuario.senha_hash);
 
     if (!senhaAtualCorreta) {
       return response.status(401).json({ mensagem: 'A senha atual está incorreta.' });
     }
 
-    // Somente o novo hash é salvo; a senha em texto puro nunca vai para o banco.
+    // Salva só o hash da nova senha e registra a data da alteração.
     const novaSenhaHash = await bcrypt.hash(novaSenha, 12);
     await run(
       'UPDATE usuarios SET senha_hash = ?, atualizado_em = CURRENT_TIMESTAMP WHERE id = ?',
@@ -149,5 +166,5 @@ async function alterarSenha(request, response) {
   }
 }
 
-// Exporta os controladores para o arquivo de rotas de usuários.
+// Exporta as funções para o arquivo de rotas (routes/usuarios.js).
 module.exports = { cadastrar, entrar, alterarSenha };

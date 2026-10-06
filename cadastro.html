@@ -1,6 +1,9 @@
-
 <!DOCTYPE html>
 <!-- informa ao navegador que o arquivo usa HTML5 -->
+<!-- =============================================================================
+     cadastro.html — página para criar uma conta nova na SwagWear.
+     O formulário envia nome, email e senha para POST /api/cadastro.
+     ============================================================================= -->
 
 <html lang="pt-BR">
 <!-- idioma do documento -->
@@ -53,8 +56,7 @@
         <!-- campo de nome -->
 
         <input id="email" name="email" type="email" placeholder="Email" autocomplete="email" required>
-        <!-- campo de email --> 
-        <!-- gravar o email senha e detalhes no banco de dados e na nuvem -->
+        <!-- campo de email -->
 
         <input id="senha" name="senha" type="password" placeholder="Senha" autocomplete="new-password" minlength="6" required>
         <!-- campo de senha -->
@@ -101,6 +103,7 @@
           body: JSON.stringify({ nome, email, senha })
         });
 
+        /* Mostra a mensagem do servidor (sucesso ou motivo do erro). */
         const resultado = await resposta.json();
         alert(resultado.mensagem);
 
@@ -115,7 +118,9 @@
     });
   </script>
 
+<!-- menu de conta na barra de navegação -->
 <script src="account.js"></script>
+<!-- chat da assistente Swag -->
 <script src="swag-assistant.js"></script>
 </body>
 </html>

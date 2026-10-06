@@ -1,2 +1,5 @@
+# Configuração do pnpm (gerenciador de pacotes).
+# allowBuilds libera o sqlite3 para compilar/baixar seu módulo nativo durante a instalação;
+# sem isso o pnpm bloqueia scripts de instalação por segurança.
 allowBuilds:
   sqlite3: true

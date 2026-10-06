@@ -11,8 +11,7 @@
     "dev": "node --watch backend/server.js",
     "init-db": "node backend/database/migrate.js",
     "migrate": "node backend/database/migrate.js",
-    "seed": "node backend/database/seed.js",
-    "tornar-admin": "node backend/database/tornarAdmin.js"
+    "seed": "node backend/database/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

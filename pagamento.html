@@ -1,12 +1,26 @@
 <!DOCTYPE html>
+<!-- =============================================================================
+     pagamento.html — finalizar a compra (pagamento DEMONSTRATIVO).
+     Mostra as peças, o total e duas formas de pagamento de mentira:
+       - PIX: cria o pedido e já o marca como pago (simulação);
+       - Boleto: cria o pedido pendente, gera um boleto sem valor e permite
+         simular o pagamento depois.
+     Pode receber as peças do carrinho ou de uma "compra direta" vinda da
+     página de produto (pagamento.html?produto=3&nome=...&preco=...).
+     ============================================================================= -->
 <html lang="pt-BR">
 <head>
+  <!-- acentos e caracteres especiais em português -->
   <meta charset="UTF-8">
+  <!-- faz a página se ajustar à largura do celular -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- título da aba do navegador -->
   <title>Pagamento - SwagWear</title>
+  <!-- estilo visual compartilhado por todas as páginas -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- barra de navegação; os links de conta são ajustados pelo account.js -->
   <header class="navbar">
     <h2>SWAGWEAR</h2>
     <nav>
@@ -18,6 +32,7 @@
   </header>
 
   <main class="pagamento-page">
+    <!-- aviso para quem NÃO está logado (começa escondido) -->
     <section id="pagamentoBloqueado" class="conta-bloqueada" hidden>
       <div class="conta-lock">!</div>
       <h1>Entre na sua conta para finalizar a compra.</h1>
@@ -25,7 +40,9 @@
       <a class="conta-primary-button" href="entrar.html">Entrar</a>
     </section>
 
+    <!-- conteúdo do pagamento, mostrado só para quem está logado -->
     <section id="pagamentoConteudo" class="pagamento-layout" hidden>
+      <!-- coluna da esquerda: quem está comprando e quais peças -->
       <div class="pagamento-produtos">
         <p class="produto-tag">FINALIZAR COMPRA</p>
         <h1>Confira seu pedido</h1>
@@ -33,18 +50,22 @@
           <strong>Comprando como <span id="compradorNome"></span></strong>
           <span id="compradorEmail"></span>
         </div>
+        <!-- lista das peças, preenchida pelo JavaScript -->
         <div id="pagamentoItens" class="conta-lista"></div>
       </div>
 
+      <!-- coluna da direita: total e forma de pagamento -->
       <aside class="pagamento-resumo">
         <h2>Pagamento demonstrativo</h2>
         <div class="carrinho-total-linha"><span>Total exibido</span><strong id="pagamentoTotal">R$ 0,00</strong></div>
 
+        <!-- botões para escolher PIX ou boleto (data-metodo diz qual é qual) -->
         <div class="metodo-escolha" aria-label="Escolha a forma de pagamento">
           <button class="metodo-card is-active" type="button" data-metodo="pix"><strong>PIX</strong><span>Confirmação acadêmica</span></button>
           <button class="metodo-card" type="button" data-metodo="boleto"><strong>BOLETO</strong><span>Documento sem valor</span></button>
         </div>
 
+        <!-- painel do PIX: chave, "QR code" ilustrativo e botão de confirmar -->
         <section id="painelPix" class="metodo-painel">
           <h3>Pagamento via PIX</h3>
           <p>Valor: <strong class="valor-metodo">R$ 0,00</strong></p>
@@ -55,12 +76,14 @@
           <button id="btnConfirmarPix" class="btn-provador" type="button">Confirmar pagamento PIX</button>
         </section>
 
+        <!-- painel do boleto (começa escondido) -->
         <section id="painelBoleto" class="metodo-painel" hidden>
           <h3>Pagamento por boleto</h3>
           <p>Valor: <strong class="valor-metodo">R$ 0,00</strong></p>
           <p class="aviso-academico">Boleto demonstrativo para apresentação acadêmica.</p>
           <button id="btnGerarBoleto" class="btn-provador" type="button">Gerar boleto demonstrativo</button>
 
+          <!-- dados do boleto, que aparecem depois de gerar -->
           <div id="boletoGerado" class="boleto-gerado" hidden>
             <p><strong>Pedido:</strong> <span id="boletoPedido"></span></p>
             <p><strong>Vencimento:</strong> <span id="boletoVencimento"></span></p>
@@ -72,43 +95,61 @@
           </div>
         </section>
 
+        <!-- mensagens de andamento, sucesso ou erro -->
         <p id="mensagemPagamento" class="provador-mensagem" role="status" aria-live="polite"></p>
       </aside>
     </section>
   </main>
 
+  <!-- menu de conta (também fornece SwagWearAccount, usado no script abaixo) -->
   <script src="account.js"></script>
+  <!-- chat da assistente Swag -->
   <script src="swag-assistant.js"></script>
   <script>
+    /* ================= DADOS INICIAIS ================= */
+
     /* O JWT identifica o comprador; nome/email nunca são enviados como identidade do pedido. */
     const sessao = window.SwagWearAccount.obterSessao();
     const bloqueado = document.getElementById("pagamentoBloqueado");
     const conteudo = document.getElementById("pagamentoConteudo");
     const mensagem = document.getElementById("mensagemPagamento");
+
+    /* Lê os parâmetros do endereço (?produto=3&nome=...&preco=...). */
     const parametros = new URLSearchParams(location.search);
     const produtoDiretoId = Number(parametros.get("produto"));
+
+    /* "Compra direta" = veio do botão Comprar da página de produto (uma peça só). */
     const compraDireta = Number.isInteger(produtoDiretoId) && produtoDiretoId > 0;
+
+    /* Peças mostradas: a peça da compra direta, ou então tudo o que está no carrinho.
+       O preço daqui é só para exibir; o servidor recalcula o valor real pelo banco. */
     const itensVisuais = compraDireta
       ? [{ produto_id: produtoDiretoId, nome: parametros.get("nome") || "Produto SwagWear", preco: Number(String(parametros.get("preco") || "0").replace(",", ".")), imagem: parametros.get("imagem") || "", quantidade: 1 }]
       : JSON.parse(localStorage.getItem("carrinho") || "[]");
 
-    let metodoAtual = "pix";
-    let boletoAtual = null;
-    let pedidoBoletoId = null;
-    let chavePixAtual = "";
+    let metodoAtual = "pix"; /* forma de pagamento escolhida */
+    let boletoAtual = null; /* dados do boleto gerado (para baixar) */
+    let pedidoBoletoId = null; /* id do pedido criado pelo boleto (evita criar dois) */
+    let chavePixAtual = ""; /* chave PIX de demonstração vinda do servidor */
 
+    /* Formata como dinheiro brasileiro: 149 -> "R$ 149,00". */
     function formatarPreco(valor) {
       return Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
     }
 
+    /* Total mostrado na tela: soma de preço x quantidade. */
     const totalVisual = itensVisuais.reduce((soma, item) => soma + Number(item.preco || 0) * Number(item.quantidade || 0), 0);
 
+    /* ================= LISTA DE PEÇAS ================= */
+
+    /* Desenha as peças e coloca o total nos lugares certos. */
     function renderizarItens() {
       const destino = document.getElementById("pagamentoItens");
       destino.innerHTML = "";
       itensVisuais.forEach(function (item) {
         const artigo = document.createElement("article");
         artigo.className = "conta-item";
+        /* Estrutura vazia; os dados entram com textContent (texto seguro). */
         artigo.innerHTML = '<img src="" alt=""><div><h3></h3><p></p></div><strong></strong>';
         artigo.querySelector("img").src = item.imagem || "";
         artigo.querySelector("img").alt = item.nome || "Produto SwagWear";
@@ -121,7 +162,11 @@
       document.querySelectorAll(".valor-metodo").forEach(elemento => elemento.textContent = formatarPreco(totalVisual));
     }
 
-    // Desenha um padrão visual a partir do texto, mas não cria um QR bancário pagável.
+    /* ================= PIX ================= */
+
+    /* Desenha um padrão visual a partir do texto, mas não cria um QR bancário pagável.
+       Gera um número ("semente") a partir das letras e usa os bits dele para pintar
+       225 quadradinhos (grade 15x15) de escuro ou claro. */
     function desenharQrDemonstrativo(texto) {
       const destino = document.getElementById("qrPix");
       destino.innerHTML = "";
@@ -135,6 +180,7 @@
       }
     }
 
+    /* Busca a chave PIX de demonstração no servidor e desenha o "QR code". */
     async function carregarPix() {
       const resposta = await fetch("/api/pagamentos/pix", {
         headers: { "Authorization": `Bearer ${sessao.token}` }
@@ -146,7 +192,10 @@
       desenharQrDemonstrativo(`SWAGWEAR-DEMO|${chavePixAtual}|${totalVisual}`);
     }
 
-    // O servidor recalcula preço/estoque e obtém usuario_id exclusivamente do JWT.
+    /* ================= PEDIDO ================= */
+
+    /* O servidor recalcula preço/estoque e obtém usuario_id exclusivamente do JWT.
+       Por isso enviamos só o id e a quantidade de cada peça. */
     async function criarPedido(metodo) {
       const resposta = await fetch("/api/pedidos", {
         method: "POST",
@@ -161,6 +210,7 @@
       return resultado.pedido;
     }
 
+    /* Marca um pedido como pago (simulação; nenhum banco é consultado). */
     async function confirmarComoPago(pedidoId) {
       const resposta = await fetch(`/api/pedidos/${pedidoId}/pagamento`, {
         method: "PATCH",
@@ -171,10 +221,14 @@
       return resultado;
     }
 
+    /* Esvazia o carrinho depois da compra. Na compra direta o carrinho não foi usado, então fica como está. */
     function limparCarrinho() {
       if (!compraDireta) localStorage.removeItem("carrinho");
     }
 
+    /* ================= ESCOLHA PIX / BOLETO ================= */
+
+    /* Ao clicar num método: destaca o botão e mostra só o painel daquele método. */
     document.querySelectorAll(".metodo-card").forEach(botao => {
       botao.addEventListener("click", function () {
         metodoAtual = this.dataset.metodo;
@@ -185,39 +239,49 @@
       });
     });
 
+    /* ================= BOTÃO "CONFIRMAR PAGAMENTO PIX" ================= */
+
     document.getElementById("btnConfirmarPix").addEventListener("click", async function () {
       if (!sessao || !itensVisuais.length) return;
-      this.disabled = true;
+      this.disabled = true; /* trava o botão para não criar dois pedidos */
       mensagem.textContent = "Preparando PIX e confirmação demonstrativa...";
       try {
+        /* 1) cria o pedido como pendente */
         const pedido = await criarPedido("pix");
-        // A rota PIX busca o email no banco e inclui a chave configurada na mensagem.
+        /* 2) A rota PIX busca o email no banco e inclui a chave configurada na mensagem. */
         const respostaPix = await fetch(`/api/pedidos/${pedido.id}/pix`, {
           method: "POST", headers: { "Authorization": `Bearer ${sessao.token}` }
         });
         const resultadoPix = await respostaPix.json();
         if (!respostaPix.ok) throw new Error(resultadoPix.mensagem);
+        /* 3) marca como pago e esvazia o carrinho */
         await confirmarComoPago(pedido.id);
         limparCarrinho();
         mensagem.innerHTML = `PIX demonstrativo confirmado! Pedido #${pedido.id} está pago. ${resultadoPix.mensagem} <a href="conta.html#confirmados">Ver pedidos pagos</a>`;
       } catch (error) {
         mensagem.textContent = error.message || "Não foi possível concluir o PIX.";
-        // Não repete automaticamente: um pedido pode ter sido criado como pendente.
+        /* Não repete automaticamente: um pedido pode ter sido criado como pendente. */
       }
     });
 
+    /* ================= BOTÃO "GERAR BOLETO" ================= */
+
     document.getElementById("btnGerarBoleto").addEventListener("click", async function () {
+      /* pedidoBoletoId preenchido = boleto já gerado; não cria outro pedido. */
       if (!sessao || !itensVisuais.length || pedidoBoletoId) return;
       this.disabled = true;
       mensagem.textContent = "Gerando boleto demonstrativo...";
       try {
+        /* 1) cria o pedido pendente */
         const pedido = await criarPedido("boleto");
         pedidoBoletoId = pedido.id;
+        /* 2) pede ao servidor os dados do boleto */
         const resposta = await fetch(`/api/pedidos/${pedido.id}/boleto`, {
           method: "POST", headers: { "Authorization": `Bearer ${sessao.token}` }
         });
         const resultado = await resposta.json();
         if (!resposta.ok) throw new Error(resultado.mensagem);
+        /* 3) mostra os dados do boleto na tela */
         boletoAtual = resultado.boleto;
         document.getElementById("boletoPedido").textContent = `#${boletoAtual.pedido_id}`;
         document.getElementById("boletoVencimento").textContent = boletoAtual.vencimento;
@@ -230,6 +294,9 @@
       }
     });
 
+    /* ================= BOTÃO "BAIXAR HTML DO BOLETO" ================= */
+
+    /* Cria um arquivo .html na memória (Blob) e força o download dele. */
     document.getElementById("btnBaixarBoleto").addEventListener("click", function () {
       if (!boletoAtual) return;
       const arquivo = new Blob([boletoAtual.html], { type: "text/html;charset=utf-8" });
@@ -237,8 +304,11 @@
       link.href = URL.createObjectURL(arquivo);
       link.download = `swagwear-boleto-demo-${boletoAtual.pedido_id}.html`;
       link.click();
+      /* Libera a memória usada pelo arquivo temporário. */
       URL.revokeObjectURL(link.href);
     });
+
+    /* ================= BOTÃO "SIMULAR PAGAMENTO DO BOLETO" ================= */
 
     document.getElementById("btnPagarBoleto").addEventListener("click", async function () {
       if (!pedidoBoletoId) return;
@@ -248,22 +318,28 @@
         mensagem.innerHTML = `Pagamento do boleto simulado! Pedido #${pedidoBoletoId} está pago. <a href="conta.html#confirmados">Ver pedidos pagos</a>`;
       } catch (error) {
         mensagem.textContent = error.message || "Não foi possível simular o pagamento.";
-        this.disabled = false;
+        this.disabled = false; /* deu erro: libera o botão para tentar de novo */
       }
     });
 
+    /* ================= INÍCIO DA PÁGINA ================= */
+
     if (!sessao) {
+      /* Ninguém logado: mostra só o aviso. */
       bloqueado.hidden = false;
     } else if (!itensVisuais.length) {
+      /* Logado, mas sem peças: avisa e desliga os botões de pagamento. */
       conteudo.hidden = false;
       mensagem.textContent = "Seu carrinho está vazio. Volte à loja para escolher uma peça.";
       document.querySelectorAll(".metodo-painel button").forEach(botao => botao.disabled = true);
     } else {
+      /* Tudo certo: mostra o comprador, as peças e carrega o PIX. */
       conteudo.hidden = false;
       document.getElementById("compradorNome").textContent = sessao.usuario.nome;
       document.getElementById("compradorEmail").textContent = sessao.usuario.email;
       renderizarItens();
       carregarPix().catch(error => {
+        /* Sem chave PIX configurada: mostra o motivo e desliga o botão do PIX. */
         mensagem.textContent = error.message;
         document.getElementById("btnConfirmarPix").disabled = true;
       });

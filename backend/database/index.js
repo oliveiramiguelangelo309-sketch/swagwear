@@ -1,20 +1,24 @@
-// DATABASE_URL é a chave de seleção do banco:
-// - sem DATABASE_URL: usa o arquivo SQLite local;
-// - com DATABASE_URL: usa PostgreSQL persistente.
+// =============================================================================
+// database/index.js — escolhe qual banco de dados o site vai usar.
+// -----------------------------------------------------------------------------
+// A variável de ambiente DATABASE_URL decide o banco:
+//   - sem DATABASE_URL: usa um arquivo SQLite local (bom para testar no PC);
+//   - com DATABASE_URL: usa o PostgreSQL do Supabase (usado online).
+// =============================================================================
 const adapter = process.env.DATABASE_URL
   ? require('./postgres')
   : require('./sqlite');
 
-// Os controladores conhecem somente esta interface comum.
-// Isso evita espalhar detalhes de SQLite ou PostgreSQL pela aplicação.
+// O resto do backend só conhece as funções abaixo, que existem nos dois bancos.
+// Assim nenhum controller precisa saber se o banco é SQLite ou PostgreSQL.
 module.exports = {
-  databaseType: adapter.databaseType,
-  databasePath: adapter.databasePath,
-  initializeDatabase: adapter.initializeDatabase,
-  checkDatabase: adapter.checkDatabase,
-  closeDatabase: adapter.closeDatabase,
-  run: adapter.run,
-  get: adapter.get,
-  all: adapter.all,
-  transaction: adapter.transaction
+  databaseType: adapter.databaseType, // "sqlite" ou "postgres"
+  databasePath: adapter.databasePath, // caminho do arquivo (só no SQLite)
+  initializeDatabase: adapter.initializeDatabase, // cria tabelas e índices
+  checkDatabase: adapter.checkDatabase, // confirma que o banco está acessível
+  closeDatabase: adapter.closeDatabase, // fecha a conexão
+  run: adapter.run, // executa INSERT/UPDATE/DELETE
+  get: adapter.get, // busca uma única linha
+  all: adapter.all, // busca várias linhas
+  transaction: adapter.transaction // agrupa comandos que precisam dar certo juntos
 };

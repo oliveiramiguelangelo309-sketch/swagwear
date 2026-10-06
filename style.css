@@ -1,3 +1,17 @@
+/* =============================================================================
+   style.css — visual de todas as páginas da SwagWear.
+   -----------------------------------------------------------------------------
+   Organização: variáveis -> estilos básicos -> navbar -> home -> cadastro/login
+   -> loja -> produto -> conta -> pagamento -> botões compartilhados -> carrinho.
+   Os blocos "@media (max-width: ...)" ajustam o layout para telas menores.
+   ============================================================================= */
+
+/* =============================================================================
+   VARIÁVEIS DE COR, TAMANHO E ANIMAÇÃO
+   Mudar um valor aqui muda o site inteiro.
+   ============================================================================= */
+
+/* variáveis (custom properties) usadas no resto do arquivo com var(--nome) */
 :root {
   --cor-fundo: #0A0A0A;
   --cor-fundo-alt: #151515;
@@ -20,31 +34,41 @@
   --largura-conteudo: 1280px;
 }
 
+/* =============================================================================
+   ESTILOS BÁSICOS (valem para todas as páginas)
+   ============================================================================= */
+
+/* zera margens/espaços padrão do navegador; box-sizing faz a largura já incluir borda e padding */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* rolagem suave ao clicar em links internos (#topo) */
 html {
   scroll-behavior: smooth;
 }
 
+/* fonte, fundo preto e texto branco do site todo */
 body {
   font-family: Arial, sans-serif;
   background: var(--cor-fundo);
   color: var(--cor-texto);
 }
 
+/* links sem sublinhado e com a cor do texto em volta */
 a {
   text-decoration: none;
   color: inherit;
 }
 
+/* espaço padrão acima e abaixo dos parágrafos */
 p {
   margin: 20px 0;
 }
 
+/* visual padrão dos botões: contorno branco e fundo transparente */
 button {
   padding: 12px 24px;
   border: 1px solid var(--cor-texto);
@@ -56,12 +80,18 @@ button {
   transition: var(--transicao);
 }
 
+/* ao passar o mouse: contorno e texto roxos com brilho */
 button:hover {
   border-color: var(--cor-marca);
   color: var(--cor-marca);
   box-shadow: 0 0 10px var(--cor-marca);
 }
 
+/* =============================================================================
+   BARRA DE NAVEGAÇÃO (topo de todas as páginas)
+   ============================================================================= */
+
+/* barra fixa no topo, semitransparente e com fundo desfocado */
 .navbar {
   position: fixed;
   top: 0;
@@ -76,29 +106,35 @@ button:hover {
   z-index: 1000;
 }
 
+/* nome da marca na barra */
 .navbar h2 {
   color: var(--cor-texto);
 }
 
+/* links do menu lado a lado */
 .navbar nav {
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
+/* cada link do menu */
 .navbar nav a {
   color: var(--cor-texto);
   transition: var(--transicao);
 }
 
+/* link do menu fica roxo ao passar o mouse */
 .navbar nav a:hover {
   color: var(--cor-marca);
 }
 
+/* botão ☰ escondido no computador (aparece no celular, ver @media abaixo) */
 .nav-toggle {
   display: none;
 }
 
+/* animação de entrada: o elemento aparece subindo (usada na home) */
 @keyframes aparecer {
   to {
     opacity: 1;
@@ -106,6 +142,11 @@ button:hover {
   }
 }
 
+/* =============================================================================
+   HOME — faixa de abertura com a imagem de fundo
+   ============================================================================= */
+
+/* ocupa a tela inteira, centraliza o conteúdo e usa imagem.png escurecida de fundo */
 .hero {
   height: 100vh;
   margin-top: 80px;
@@ -120,6 +161,7 @@ button:hover {
   background-size: cover;
 }
 
+/* título gigante "SWAGWEAR" com a fonte Montserrat */
 .hero h1 {
   font-family: 'Montserrat', sans-serif;
   font-size: 6rem;
@@ -130,6 +172,7 @@ button:hover {
   margin-bottom: 20px;
 }
 
+/* frase da home: começa invisível e aparece com a animação */
 .hero p {
   opacity: 0;
   transform: translateY(30px);
@@ -137,12 +180,14 @@ button:hover {
   animation-delay: 0.3s;
 }
 
+/* botão "Explorar": aparece um pouco depois da frase */
 .hero button {
   opacity: 0;
   animation: aparecer 1s ease forwards;
   animation-delay: 0.6s;
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .navbar, .navbar h2, .hero h1, .nav-toggle... */
 @media (max-width: 768px) {
   .navbar {
     padding: 15px 20px;
@@ -216,6 +261,11 @@ button:hover {
   }
 }
 
+/* =============================================================================
+   CADASTRO E LOGIN (cadastro.html e entrar.html)
+   ============================================================================= */
+
+/* fundo da página com brilho roxo e caixa centralizada */
 .cadastro {
   min-height: 100vh;
   display: flex;
@@ -227,6 +277,7 @@ button:hover {
     var(--cor-fundo);
 }
 
+/* caixa do formulário, translúcida com sombra roxa */
 .box {
   width: 100%;
   max-width: 360px;
@@ -239,10 +290,12 @@ button:hover {
   transition: var(--transicao);
 }
 
+/* caixa cresce um pouquinho ao passar o mouse */
 .box:hover {
   transform: scale(1.02);
 }
 
+/* título com degradê do branco para o roxo */
 .box h2 {
   margin-bottom: 10px;
   color: var(--cor-texto);
@@ -252,22 +305,26 @@ button:hover {
   -webkit-text-fill-color: transparent;
 }
 
+/* subtítulo em cinza claro */
 .box p {
   margin-bottom: 20px;
   color: var(--cor-texto-suave);
 }
 
+/* botão travado enquanto o login é verificado */
 .box button:disabled {
   opacity: 0.65;
   cursor: wait;
 }
 
+/* campos do formulário empilhados com espaço entre eles */
 form {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
+/* caixas de texto escuras e arredondadas */
 input {
   width: 100%;
   padding: 12px;
@@ -278,24 +335,29 @@ input {
   font: inherit;
 }
 
+/* campo selecionado ganha brilho roxo */
 input:focus {
   outline: none;
   box-shadow: 0 0 10px var(--cor-marca);
 }
 
+/* botão do formulário ocupa a largura toda */
 form button {
   width: 100%;
   margin-top: 10px;
 }
 
+/* texto "Já tem conta? / Não tem conta?" */
 .login-link {
   margin-top: 15px;
 }
 
+/* link desse texto em roxo */
 .login-link a {
   color: var(--cor-marca);
 }
 
+/* caixa de mensagem do login (escondida até ter mensagem) */
 .login-status {
   display: none;
   margin-top: 18px;
@@ -304,6 +366,7 @@ form button {
   text-align: left;
 }
 
+/* mostra a caixa quando há mensagem */
 .login-status.is-loading,
 .login-status.is-error,
 .login-status.is-success {
@@ -311,17 +374,20 @@ form button {
   gap: 5px;
 }
 
+/* mensagem "Verificando..." em roxo claro */
 .login-status.is-loading {
   background: rgba(123, 47, 255, 0.12);
   color: #d9c6ff;
 }
 
+/* mensagem de erro em vermelho */
 .login-status.is-error {
   border: 1px solid rgba(255, 99, 132, 0.35);
   background: rgba(255, 99, 132, 0.1);
   color: #ffb6c5;
 }
 
+/* mensagem de sucesso com fundo roxo */
 .login-status.is-success {
   border: 1px solid rgba(123, 47, 255, 0.45);
   background: linear-gradient(135deg, rgba(123, 47, 255, 0.22), rgba(255, 255, 255, 0.04));
@@ -329,16 +395,23 @@ form button {
   box-shadow: 0 0 24px rgba(123, 47, 255, 0.18);
 }
 
+/* texto pequeno da mensagem de sucesso */
 .login-status small {
   color: #bdb4c9;
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .box */
 @media (max-width: 768px) {
   .box {
     max-width: 95%;
   }
 }
 
+/* =============================================================================
+   LOJA — faixa de abertura e seções dos drops (loja.html)
+   ============================================================================= */
+
+/* faixa do topo da loja com foto escurecida */
 .hero-loja {
   min-height: 75vh;
   display: flex;
@@ -352,10 +425,12 @@ form button {
   background-size: cover;
 }
 
+/* limita a largura do texto da faixa */
 .overlay-loja {
   max-width: 850px;
 }
 
+/* texto pequeno roxo acima do título */
 .mini-tag {
   color: var(--cor-marca);
   letter-spacing: 3px;
@@ -363,11 +438,13 @@ form button {
   font-size: 0.85rem;
 }
 
+/* título "COLEÇÕES SWAGWEAR" */
 .hero-loja h1 {
   font-size: 4rem;
   margin: 18px 0 12px;
 }
 
+/* frase abaixo do título */
 .sub-loja {
   color: var(--cor-texto-suave);
   font-size: 1.1rem;
@@ -375,17 +452,20 @@ form button {
   margin: 0 auto;
 }
 
+/* seção de cada drop, com uma linha separando do drop anterior */
 .colecao {
   padding: 90px 20px;
   border-top: 1px solid var(--cor-borda);
 }
 
+/* cabeçalho centralizado do drop */
 .colecao-topo {
   text-align: center;
   max-width: 720px;
   margin: 0 auto 45px;
 }
 
+/* etiqueta "DROP 01 / DROP 02" em roxo */
 .tag-colecao {
   color: var(--cor-marca);
   text-transform: uppercase;
@@ -394,16 +474,19 @@ form button {
   margin-bottom: 10px;
 }
 
+/* nome do drop */
 .colecao-topo h2 {
   font-size: 2.5rem;
   margin-bottom: 15px;
 }
 
+/* descrição do drop */
 .colecao-topo p {
   color: var(--cor-texto-suave);
   line-height: 1.6;
 }
 
+/* grade com 4 cards por linha */
 .grid-loja {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -412,6 +495,11 @@ form button {
   margin: 0 auto;
 }
 
+/* =============================================================================
+   CARD DE PRODUTO (usado na loja, na home e na página de produto)
+   ============================================================================= */
+
+/* card com fundo escuro, borda fina e cantos arredondados */
 .card {
   display: flex;
   flex-direction: column;
@@ -423,12 +511,14 @@ form button {
   transition: transform 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
 }
 
+/* card sobe e ganha brilho roxo ao passar o mouse */
 .card:hover {
   transform: translateY(-8px);
   border-color: rgba(123, 47, 255, 0.35);
   box-shadow: 0 18px 38px rgba(123, 47, 255, 0.12);
 }
 
+/* foto da camiseta na proporção 3:4, cortada para preencher */
 .card img {
   width: 100%;
   aspect-ratio: 3 / 4;
@@ -437,10 +527,12 @@ form button {
   transition: transform 0.35s ease;
 }
 
+/* foto dá um leve zoom ao passar o mouse */
 .card:hover img {
   transform: scale(1.05);
 }
 
+/* parte de texto do card (abaixo da foto) */
 .info {
   display: flex;
   flex: 1;
@@ -448,6 +540,7 @@ form button {
   padding: 18px;
 }
 
+/* texto pequeno roxo acima do nome (ex.: "Drop 01" ou "Blusa") */
 .categoria {
   display: inline-block;
   color: var(--cor-marca);
@@ -457,17 +550,20 @@ form button {
   margin-bottom: 10px;
 }
 
+/* nome da camiseta */
 .info h3 {
   font-size: 1.08rem;
   margin-bottom: 8px;
 }
 
+/* preço (flex: 1 empurra o botão para o fim do card) */
 .info p {
   color: var(--cor-texto-suave);
   margin: 0 0 14px;
   flex: 1;
 }
 
+/* botão "Ver mais" do card */
 .btn-card {
   display: inline-block;
   width: 100%;
@@ -481,12 +577,18 @@ form button {
   transition: var(--transicao);
 }
 
+/* botão "Ver mais" fica roxo ao passar o mouse */
 .btn-card:hover {
   border-color: var(--cor-marca);
   color: var(--cor-marca);
   box-shadow: 0 0 14px rgba(123, 47, 255, 0.35);
 }
 
+/* =============================================================================
+   BOTÃO "VOLTAR AO TOPO" (loja.html)
+   ============================================================================= */
+
+/* botão redondo fixo no canto inferior esquerdo */
 .btn-topo {
   position: fixed;
   left: 24px;
@@ -502,18 +604,21 @@ form button {
   z-index: 900;
 }
 
+/* botão "voltar ao topo" fica roxo ao passar o mouse */
 .btn-topo:hover {
   border-color: var(--cor-marca);
   color: var(--cor-marca);
   box-shadow: 0 0 15px var(--cor-marca);
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 1100PX (celular/tablet): .grid-loja */
 @media (max-width: 1100px) {
   .grid-loja {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .hero-loja h1, .colecao-topo h2, .grid-loja, .btn-topo */
 @media (max-width: 768px) {
   .hero-loja h1 {
     font-size: 2.6rem;
@@ -535,10 +640,16 @@ form button {
   }
 }
 
+/* =============================================================================
+   CARROSSEL DE DESTAQUES (home e "Você também pode curtir")
+   ============================================================================= */
+
+/* espaço em volta da vitrine da home */
 .produtos-home {
   padding: 100px 20px;
 }
 
+/* título de um lado e setas do carrossel do outro */
 .titulo-linha {
   display: flex;
   justify-content: space-between;
@@ -547,19 +658,23 @@ form button {
   margin-bottom: 30px;
 }
 
+/* título da vitrine */
 .titulo-linha h2 {
   font-size: 2.2rem;
 }
 
+/* subtítulo da vitrine */
 .titulo-linha p {
   color: var(--cor-texto-suave);
 }
 
+/* setas ← → lado a lado */
 .botoes-carrossel {
   display: flex;
   gap: 12px;
 }
 
+/* botão redondo de seta */
 .seta {
   width: 48px;
   height: 48px;
@@ -571,16 +686,19 @@ form button {
   transition: var(--transicao);
 }
 
+/* seta fica roxa ao passar o mouse */
 .seta:hover {
   border-color: var(--cor-marca);
   color: var(--cor-marca);
   box-shadow: 0 0 15px rgba(123, 47, 255, 0.35);
 }
 
+/* esconde o que passa da borda do carrossel */
 .carrossel-wrapper {
   overflow: hidden;
 }
 
+/* fila horizontal de cards com rolagem para o lado */
 .carrossel {
   display: flex;
   gap: 20px;
@@ -589,16 +707,19 @@ form button {
   scrollbar-width: none;
 }
 
+/* esconde a barra de rolagem no Chrome/Edge/Safari */
 .carrossel::-webkit-scrollbar {
   display: none;
 }
 
+/* no carrossel, todo card tem largura fixa e não encolhe */
 .carrossel .card {
   min-width: 260px;
   max-width: 260px;
   flex-shrink: 0;
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .titulo-linha, .carrossel .card */
 @media (max-width: 768px) {
   .titulo-linha {
     flex-direction: column;
@@ -611,6 +732,11 @@ form button {
   }
 }
 
+/* =============================================================================
+   PÁGINA DE PRODUTO (produto.html)
+   ============================================================================= */
+
+/* foto à esquerda e detalhes à direita (quebra em coluna se faltar espaço) */
 .produto-page {
   display: flex;
   gap: 40px;
@@ -620,6 +746,7 @@ form button {
   padding: 140px 40px 60px;
 }
 
+/* moldura da foto grande */
 .produto-imagem-box {
   width: 100%;
   max-width: 500px;
@@ -630,6 +757,7 @@ form button {
   box-shadow: var(--sombra-card);
 }
 
+/* foto grande da camiseta */
 .produto-imagem-box img {
   width: 100%;
   aspect-ratio: 4 / 5;
@@ -637,11 +765,13 @@ form button {
   display: block;
 }
 
+/* coluna com nome, preço, tamanhos e botões */
 .produto-detalhes {
   width: 100%;
   max-width: 520px;
 }
 
+/* texto pequeno roxo acima de títulos (também usado em outras páginas) */
 .produto-tag {
   color: var(--cor-marca);
   text-transform: uppercase;
@@ -649,27 +779,32 @@ form button {
   font-size: 0.85rem;
 }
 
+/* nome da camiseta */
 .produto-detalhes h1 {
   font-size: 3rem;
   margin: 10px 0 15px;
 }
 
+/* preço em destaque */
 .produto-preco {
   font-size: 1.4rem;
   color: var(--cor-texto-suave);
   margin-bottom: 20px;
 }
 
+/* texto de descrição */
 .produto-descricao {
   color: #D5D5D5;
   line-height: 1.8;
   margin-bottom: 30px;
 }
 
+/* título "Tamanhos" */
 .produto-tamanhos h3 {
   margin-bottom: 15px;
 }
 
+/* botões P/M/G/GG lado a lado */
 .tamanhos-lista {
   display: flex;
   gap: 12px;
@@ -677,6 +812,7 @@ form button {
   margin-bottom: 30px;
 }
 
+/* botão de tamanho */
 .tamanho-btn {
   min-width: 60px;
   padding: 12px 16px;
@@ -688,12 +824,14 @@ form button {
   transition: var(--transicao);
 }
 
+/* botão de tamanho destacado ao passar o mouse */
 .tamanho-btn:hover {
   border-color: var(--cor-marca);
   color: var(--cor-marca);
   box-shadow: 0 0 12px rgba(123, 47, 255, 0.35);
 }
 
+/* base comum dos botões "Comprar agora" e "Adicionar ao carrinho" */
 .btn-comprar,
 .btn-carrinho {
   display: block;
@@ -705,6 +843,7 @@ form button {
   transition: var(--transicao);
 }
 
+/* botão "Comprar agora" (roxo e cheio) */
 .btn-comprar {
   margin-bottom: 14px;
   border: 1px solid var(--cor-texto);
@@ -712,43 +851,28 @@ form button {
   color: var(--cor-texto);
 }
 
+/* "Comprar agora" ao passar o mouse */
 .btn-comprar:hover {
   border-color: var(--cor-marca);
   color: var(--cor-marca);
   box-shadow: 0 0 14px rgba(123, 47, 255, 0.35);
 }
 
+/* botão "Adicionar ao carrinho" (só contorno) */
 .btn-carrinho {
   border: 1px solid var(--cor-borda-forte);
   background: rgba(255, 255, 255, 0.05);
   color: var(--cor-texto);
 }
 
+/* "Adicionar ao carrinho" ao passar o mouse */
 .btn-carrinho:hover {
   border-color: var(--cor-marca);
   color: var(--cor-marca);
   box-shadow: 0 0 14px rgba(123, 47, 255, 0.25);
 }
 
-.btn-provador-produto {
-  display: block;
-  width: 100%;
-  margin-top: 14px;
-  padding: 16px;
-  border: 1px solid var(--cor-marca);
-  border-radius: var(--raio);
-  background: var(--cor-marca-fraca);
-  color: var(--cor-texto);
-  text-align: center;
-  transition: var(--transicao);
-}
-
-.btn-provador-produto:hover {
-  color: var(--cor-texto);
-  background: var(--cor-marca);
-  box-shadow: 0 0 18px rgba(123, 47, 255, 0.38);
-}
-
+/* bloco de Especificações e Guia de Tamanhos */
 .produto-info-extra {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -758,6 +882,7 @@ form button {
   padding: 20px 40px 80px;
 }
 
+/* cada caixa desse bloco */
 .info-extra-box {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--cor-borda);
@@ -766,10 +891,12 @@ form button {
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
+/* título da caixa */
 .info-extra-box h2 {
   margin-bottom: 18px;
 }
 
+/* lista de itens da caixa */
 .lista-info {
   list-style: none;
   display: flex;
@@ -777,15 +904,18 @@ form button {
   gap: 12px;
 }
 
+/* cada item da lista */
 .lista-info li {
   color: #D0D0D0;
   line-height: 1.6;
 }
 
+/* espaço da seção "Você também pode curtir" */
 .relacionados {
   padding: 20px 20px 100px;
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 900PX (celular/tablet): .produto-page, .produto-detalhes h1, .produto-info-extra */
 @media (max-width: 900px) {
   .produto-page {
     padding: 110px 20px 50px;
@@ -802,10 +932,16 @@ form button {
   }
 }
 
+/* =============================================================================
+   MENU DA CONTA NA NAVBAR (criado pelo account.js)
+   ============================================================================= */
+
+/* container do botão de conta (avatar + nome) */
 .account-menu {
   position: relative;
 }
 
+/* botão com a inicial, o primeiro nome e a seta ⌄ */
 .account-trigger {
   display: flex;
   align-items: center;
@@ -818,6 +954,7 @@ form button {
   cursor: pointer;
 }
 
+/* círculo roxo com a inicial do nome */
 .account-avatar,
 .perfil-avatar {
   display: grid;
@@ -829,15 +966,18 @@ form button {
   box-shadow: 0 0 18px rgba(123, 47, 255, 0.35);
 }
 
+/* tamanho do avatar pequeno da barra */
 .account-avatar {
   width: 34px;
   height: 34px;
 }
 
+/* primeiro nome ao lado do avatar */
 .account-name {
   cursor: pointer;
 }
 
+/* menu suspenso da conta (escondido até clicar) */
 .account-dropdown {
   position: absolute;
   top: calc(100% + 12px);
@@ -851,10 +991,12 @@ form button {
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55);
 }
 
+/* mostra o menu suspenso quando aberto */
 .account-menu.is-open .account-dropdown {
   display: grid;
 }
 
+/* cada opção do menu suspenso */
 .account-dropdown a,
 .account-logout {
   width: 100%;
@@ -869,33 +1011,43 @@ form button {
   cursor: pointer;
 }
 
+/* opção destacada ao passar o mouse */
 .account-dropdown a:hover,
 .account-logout:hover {
   background: rgba(123, 47, 255, 0.16);
   color: #fff;
 }
 
+/* botão "Sair" do menu suspenso */
 .account-logout {
   margin-top: 5px;
   border-top: 1px solid rgba(255, 255, 255, 0.09);
   color: #d9bfff;
 }
 
+/* =============================================================================
+   MINHA CONTA (conta.html)
+   ============================================================================= */
+
+/* área principal da página da conta */
 .conta-page {
   min-height: 100vh;
   padding: 125px 6vw 70px;
   background: radial-gradient(circle at 80% 0%, rgba(123, 47, 255, 0.18), transparent 34%), var(--cor-fundo);
 }
 
+/* cabeçalho "Minha conta" */
 .conta-header {
   max-width: var(--largura-conteudo);
   margin: 0 auto 26px;
 }
 
+/* título "Minha conta" */
 .conta-header h1 {
   font-size: clamp(2.2rem, 5vw, 4rem);
 }
 
+/* textos de apoio em cinza */
 .conta-header > p:last-child,
 .conta-section-title p,
 .perfil-card p,
@@ -903,6 +1055,7 @@ form button {
   color: #aaa2b3;
 }
 
+/* fila de botões das abas */
 .conta-tabs {
   max-width: var(--largura-conteudo);
   margin: 0 auto 24px;
@@ -912,6 +1065,7 @@ form button {
   padding-bottom: 5px;
 }
 
+/* cada botão de aba */
 .conta-tabs button {
   flex: 0 0 auto;
   padding: 11px 16px;
@@ -922,18 +1076,21 @@ form button {
   cursor: pointer;
 }
 
+/* aba aberta fica destacada em roxo */
 .conta-tabs button.is-active {
   border-color: var(--cor-marca);
   background: rgba(123, 47, 255, 0.2);
   color: #fff;
 }
 
+/* base das seções da conta */
 .conta-panel,
 .conta-bloqueada {
   max-width: var(--largura-conteudo);
   margin: 0 auto;
 }
 
+/* visual comum das caixas da conta (fundo escuro e borda) */
 .perfil-card,
 .senha-card,
 .pedido-card,
@@ -946,6 +1103,7 @@ form button {
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
 }
 
+/* caixa do perfil: avatar, dados e botão de sair */
 .perfil-card {
   display: flex;
   align-items: center;
@@ -953,10 +1111,12 @@ form button {
   padding: 30px;
 }
 
+/* nome e email do perfil */
 .perfil-dados {
   flex: 1;
 }
 
+/* avatar grande do perfil */
 .perfil-avatar {
   flex: 0 0 auto;
   width: 82px;
@@ -964,6 +1124,7 @@ form button {
   font-size: 2rem;
 }
 
+/* botão "Sair da conta" */
 .conta-logout-button {
   padding: 11px 16px;
   border: 1px solid rgba(123, 47, 255, 0.45);
@@ -973,6 +1134,7 @@ form button {
   cursor: pointer;
 }
 
+/* título de cada aba com link opcional à direita */
 .conta-section-title {
   display: flex;
   justify-content: space-between;
@@ -981,6 +1143,7 @@ form button {
   margin-bottom: 18px;
 }
 
+/* botões/links roxos da conta */
 .conta-section-title a,
 .conta-primary-button {
   padding: 11px 16px;
@@ -990,11 +1153,13 @@ form button {
   white-space: nowrap;
 }
 
+/* lista de cards (pedidos, itens) com espaço entre eles */
 .conta-lista {
   display: grid;
   gap: 14px;
 }
 
+/* linha de item: foto, nome/quantidade e preço */
 .conta-item {
   display: grid;
   grid-template-columns: 78px 1fr auto;
@@ -1003,6 +1168,7 @@ form button {
   padding: 14px;
 }
 
+/* foto pequena do item */
 .conta-item img {
   width: 78px;
   height: 78px;
@@ -1011,18 +1177,21 @@ form button {
   background: #1c1a1f;
 }
 
+/* espaço interno das caixas */
 .pedido-card,
 .conta-empty,
 .senha-card {
   padding: 22px;
 }
 
+/* número/data do pedido de um lado e status do outro */
 .pedido-top {
   display: flex;
   justify-content: space-between;
   gap: 14px;
 }
 
+/* etiqueta do status (pendente, pago...) */
 .pedido-status {
   align-self: flex-start;
   padding: 7px 11px;
@@ -1032,23 +1201,27 @@ form button {
   text-transform: capitalize;
 }
 
+/* lista dos itens de um pedido */
 .pedido-itens {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
+/* cada item do pedido em formato de "pílula" */
 .pedido-itens span {
   padding: 7px 10px;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.05);
 }
 
+/* fila das 4 etapas do rastreio */
 .tracking-steps {
   display: grid;
   margin-top: 18px;
 }
 
+/* cada etapa do rastreio */
 .tracking-step {
   display: flex;
   align-items: center;
@@ -1057,6 +1230,7 @@ form button {
   color: #77717e;
 }
 
+/* bolinha da etapa (○ ou ✓) */
 .tracking-step span {
   display: grid;
   place-items: center;
@@ -1066,19 +1240,23 @@ form button {
   border-radius: 50%;
 }
 
+/* etapa concluída */
 .tracking-step.is-complete {
   color: #fff;
 }
 
+/* bolinha da etapa concluída em roxo */
 .tracking-step.is-complete span {
   border-color: var(--cor-marca);
   background: var(--cor-marca);
 }
 
+/* caixa do formulário de troca de senha */
 .senha-card {
   max-width: 560px;
 }
 
+/* cada campo com seu texto em cima */
 .senha-card label {
   display: grid;
   gap: 8px;
@@ -1086,33 +1264,39 @@ form button {
   color: #d7d2dd;
 }
 
+/* mensagem do formulário de senha */
 .conta-message {
   display: none;
   padding: 12px;
   border-radius: var(--raio-sm);
 }
 
+/* mostra a mensagem quando há texto */
 .conta-message.is-error,
 .conta-message.is-success {
   display: block;
 }
 
+/* mensagem de erro em vermelho */
 .conta-message.is-error {
   background: rgba(255, 99, 132, 0.1);
   color: #ffb6c5;
 }
 
+/* mensagem de sucesso */
 .conta-message.is-success {
   background: rgba(77, 214, 145, 0.12);
   color: #9ff0c7;
 }
 
+/* aviso "você precisa entrar", centralizado */
 .conta-bloqueada {
   max-width: 650px;
   padding: 45px;
   text-align: center;
 }
 
+/* círculo com "!" do aviso */
 .conta-lock {
   display: grid;
   place-items: center;
@@ -1126,6 +1310,7 @@ form button {
   font-weight: 800;
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .navbar, .account-dropdown, .conta-page, .conta-tabs... */
 @media (max-width: 768px) {
   .navbar {
     gap: 14px;
@@ -1181,12 +1366,18 @@ form button {
   }
 }
 
+/* =============================================================================
+   PAGAMENTO DEMONSTRATIVO (pagamento.html)
+   ============================================================================= */
+
+/* área principal da página de pagamento */
 .pagamento-page {
   min-height: 100vh;
   padding: 125px 6vw 70px;
   background: radial-gradient(circle at 15% 0%, rgba(123, 47, 255, 0.18), transparent 32%), var(--cor-fundo);
 }
 
+/* duas colunas: peças à esquerda e pagamento à direita */
 .pagamento-layout {
   max-width: var(--largura-conteudo);
   margin: 0 auto;
@@ -1195,11 +1386,13 @@ form button {
   gap: 28px;
 }
 
+/* título "Confira seu pedido" */
 .pagamento-produtos h1 {
   margin-bottom: 8px;
   font-size: clamp(2.1rem, 5vw, 3.6rem);
 }
 
+/* caixa "Comprando como <nome>" */
 .comprando-como {
   display: grid;
   gap: 4px;
@@ -1207,6 +1400,7 @@ form button {
   color: #c8b6df;
 }
 
+/* coluna da direita com total e métodos */
 .pagamento-resumo {
   align-self: start;
   display: grid;
@@ -1217,10 +1411,12 @@ form button {
   background: rgba(255, 255, 255, 0.045);
 }
 
+/* rótulos de campos do resumo */
 .pagamento-resumo label {
   color: #d7d2dd;
 }
 
+/* listas de seleção do resumo */
 .pagamento-resumo select {
   width: 100%;
   padding: 12px;
@@ -1231,6 +1427,7 @@ form button {
   font: inherit;
 }
 
+/* botões PIX e BOLETO lado a lado */
 .metodo-escolha {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1238,6 +1435,7 @@ form button {
   margin: 22px 0;
 }
 
+/* botão de cada forma de pagamento */
 .metodo-card {
   display: grid;
   gap: 4px;
@@ -1252,25 +1450,30 @@ form button {
   transition: var(--transicao);
 }
 
+/* texto pequeno do botão */
 .metodo-card span {
   color: #aaa;
   font-size: 0.75rem;
 }
 
+/* valor dentro do botão */
 .metodo-card .valor-metodo {
   color: var(--cor-marca-clara);
   font-weight: 700;
 }
 
+/* forma de pagamento escolhida fica roxa */
 .metodo-card.is-active {
   border-color: #7c3aed;
   box-shadow: 0 0 0 1px #7c3aed;
 }
 
+/* painel do PIX ou do boleto */
 .metodo-painel {
   padding-top: 2px;
 }
 
+/* caixa com a chave PIX ou o código do boleto */
 .codigo-demonstrativo {
   overflow-wrap: anywhere;
   padding: 12px;
@@ -1281,6 +1484,7 @@ form button {
   font-family: monospace;
 }
 
+/* grade 15x15 do "QR code" ilustrativo */
 .qr-demonstrativo {
   display: grid;
   grid-template-columns: repeat(15, 1fr);
@@ -1293,14 +1497,17 @@ form button {
   background: #fff;
 }
 
+/* cada quadradinho da grade */
 .qr-demonstrativo span {
   background: #fff;
 }
 
+/* quadradinho pintado de escuro */
 .qr-demonstrativo span.is-dark {
   background: #111;
 }
 
+/* aviso de que o pagamento é só demonstração */
 .aviso-academico {
   margin: 14px 0;
   color: #c9b7ff;
@@ -1308,16 +1515,19 @@ form button {
   line-height: 1.5;
 }
 
+/* dados do boleto depois de gerado */
 .boleto-gerado {
   display: grid;
   gap: 10px;
   margin-top: 18px;
 }
 
+/* botões de baixar e simular pagamento */
 .boleto-gerado button {
   width: 100%;
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .pagamento-page, .pagamento-layout */
 @media (max-width: 768px) {
   .pagamento-page {
     padding: 105px 16px 45px;
@@ -1328,6 +1538,7 @@ form button {
   }
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 520PX (celular/tablet): .metodo-escolha, .qr-demonstrativo */
 @media (max-width: 520px) {
   .metodo-escolha {
     grid-template-columns: 1fr;
@@ -1338,142 +1549,12 @@ form button {
   }
 }
 
-.provador-page {
-  min-height: 100vh;
-  padding: 140px 32px 80px;
-  background:
-    radial-gradient(circle at 50% 15%, rgba(123, 47, 255, 0.14), transparent 34%),
-    #0b0b0b;
-}
+/* =============================================================================
+   BOTÕES E MENSAGENS COMPARTILHADOS
+   (o nome "provador" ficou de uma versão antiga; hoje são usados no carrinho e no pagamento)
+   ============================================================================= */
 
-.provador-cabecalho {
-  max-width: 900px;
-  margin: 0 auto 42px;
-  text-align: center;
-}
-
-.provador-etiqueta,
-.provador-categoria {
-  color: var(--cor-marca-clara);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.provador-cabecalho h1 {
-  margin: 10px 0 12px;
-  font-size: clamp(2rem, 5vw, 3.6rem);
-}
-
-.provador-cabecalho > p:last-child,
-.provador-painel-titulo p {
-  color: #aaa;
-}
-
-.provador-container {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-  width: 100%;
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-.provador-painel {
-  padding: 24px;
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-xl);
-  background: rgba(21, 21, 21, 0.88);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
-}
-
-.provador-painel-titulo {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 20px;
-}
-
-.provador-painel-titulo > span {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  flex: 0 0 auto;
-  border: 1px solid rgba(123, 47, 255, 0.55);
-  border-radius: 50%;
-  color: #b692ff;
-}
-
-.provador-painel-titulo h2 {
-  margin-bottom: 4px;
-  font-size: 1.25rem;
-}
-
-.provador-preview,
-.provador-produto-imagem {
-  display: grid;
-  min-height: 430px;
-  place-items: center;
-  overflow: hidden;
-  border: 1px dashed rgba(154, 98, 255, 0.45);
-  border-radius: 16px;
-  background: #101010;
-}
-
-.provador-preview img,
-.provador-produto-imagem img {
-  width: 100%;
-  height: 430px;
-  object-fit: cover;
-  display: block;
-}
-
-.provador-preview img[hidden],
-.provador-placeholder[hidden] {
-  display: none;
-}
-
-.provador-produto-imagem img[src=""] {
-  visibility: hidden;
-}
-
-.provador-placeholder {
-  display: flex;
-  padding: 24px;
-  flex-direction: column;
-  align-items: center;
-  gap: 9px;
-  color: #aaa;
-  text-align: center;
-}
-
-.provador-placeholder span {
-  color: #8d4dff;
-  font-size: 3rem;
-  line-height: 1;
-}
-
-.provador-placeholder small {
-  color: #777;
-}
-
-.provador-upload-acoes {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 18px;
-}
-
-.provador-input-arquivo {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-}
-
+/* botão secundário (só contorno), ex.: "Entrar" e "Explorar a loja" */
 .btn-provador-secundario {
   display: inline-block;
   padding: 13px 18px;
@@ -1486,37 +1567,13 @@ form button {
   transition: 0.25s;
 }
 
+/* botão secundário ao passar o mouse */
 .btn-provador-secundario:hover {
   border-color: var(--cor-marca);
   color: #b692ff;
 }
 
-.provador-privacidade {
-  margin-top: 16px;
-  color: #898989;
-  font-size: 0.8rem;
-  line-height: 1.5;
-}
-
-.provador-produto-info {
-  padding: 20px 2px 4px;
-}
-
-.provador-produto-info h2 {
-  margin: 7px 0 8px;
-  font-size: 1.65rem;
-}
-
-.provador-preco {
-  color: #ddd;
-  font-size: 1.2rem;
-}
-
-.provador-trocar {
-  width: 100%;
-  margin-top: 18px;
-}
-
+/* botão principal roxo, ex.: "Ir para pagamento" e "Confirmar pagamento PIX" */
 .btn-provador {
   display: block;
   width: min(100%, 520px);
@@ -1533,18 +1590,21 @@ form button {
   transition: 0.25s;
 }
 
+/* botão principal ao passar o mouse */
 .btn-provador:hover {
   transform: translateY(-2px);
   background: var(--cor-marca-hover);
   box-shadow: 0 0 28px rgba(123, 47, 255, 0.4);
 }
 
+/* botão principal travado (esmaecido) */
 .btn-provador:disabled {
   cursor: wait;
   opacity: 0.65;
   transform: none;
 }
 
+/* mensagens de andamento e erro do carrinho e do pagamento */
 .provador-mensagem {
   min-height: 24px;
   margin: 16px auto 0;
@@ -1552,76 +1612,18 @@ form button {
   text-align: center;
 }
 
-.provador-resultado {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px;
-  width: 100%;
-  max-width: 900px;
-  margin: 36px auto 0;
-}
+/* =============================================================================
+   CARRINHO (carrinho.html)
+   ============================================================================= */
 
-.provador-resultado[hidden] {
-  display: none;
-}
-
-.provador-resultado > div {
-  padding: 18px;
-  border: 1px solid var(--cor-borda);
-  border-radius: var(--raio-lg);
-  background: var(--cor-fundo-alt);
-}
-
-.provador-resultado img {
-  width: 100%;
-  height: 480px;
-  margin-top: 12px;
-  border-radius: 13px;
-  object-fit: cover;
-}
-
-@media (max-width: 760px) {
-  .provador-page {
-    padding: 120px 16px 54px;
-  }
-
-  .provador-container {
-    grid-template-columns: 1fr;
-  }
-
-  .provador-painel {
-    padding: 18px;
-  }
-
-  .provador-preview,
-  .provador-produto-imagem {
-    min-height: 340px;
-  }
-
-  .provador-preview img,
-  .provador-produto-imagem img {
-    height: 340px;
-  }
-
-  .provador-upload-acoes {
-    grid-template-columns: 1fr;
-  }
-
-  .provador-resultado {
-    grid-template-columns: 1fr;
-  }
-
-  .provador-resultado img {
-    height: 380px;
-  }
-}
-
+/* área principal da página do carrinho */
 .carrinho-page {
   min-height: 100vh;
   padding: 140px 32px 80px;
   background: radial-gradient(circle at 20% 10%, rgba(123, 47, 255, 0.1), transparent 30%), #0b0b0b;
 }
 
+/* largura máxima centralizada */
 .carrinho-cabecalho,
 .carrinho-layout {
   width: 100%;
@@ -1630,20 +1632,24 @@ form button {
   margin-right: auto;
 }
 
+/* cabeçalho "Peças escolhidas" */
 .carrinho-cabecalho {
   margin-bottom: 34px;
 }
 
+/* título do carrinho */
 .carrinho-cabecalho h1 {
   margin: 8px 0;
   font-size: clamp(2rem, 5vw, 3.2rem);
 }
 
+/* textos de apoio em cinza */
 .carrinho-cabecalho > p:last-child,
 .carrinho-aviso {
   color: #999;
 }
 
+/* lista de peças à esquerda e resumo à direita */
 .carrinho-layout {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(280px, 0.7fr);
@@ -1651,12 +1657,14 @@ form button {
   align-items: start;
 }
 
+/* coluna com as peças */
 .carrinho-lista {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
+/* visual comum das caixas do carrinho */
 .carrinho-item,
 .carrinho-resumo,
 .carrinho-vazio {
@@ -1665,6 +1673,7 @@ form button {
   background: var(--cor-fundo-alt);
 }
 
+/* linha de uma peça: foto, informações e botão remover */
 .carrinho-item {
   display: grid;
   grid-template-columns: 130px minmax(0, 1fr) auto;
@@ -1673,6 +1682,7 @@ form button {
   align-items: center;
 }
 
+/* foto da peça */
 .carrinho-item > img {
   width: 130px;
   height: 145px;
@@ -1681,11 +1691,13 @@ form button {
   background: #0f0f0f;
 }
 
+/* nome da peça */
 .carrinho-item-info h2 {
   margin-bottom: 8px;
   font-size: 1.25rem;
 }
 
+/* controles − quantidade ＋ */
 .carrinho-quantidade {
   display: flex;
   align-items: center;
@@ -1693,6 +1705,7 @@ form button {
   margin-top: 17px;
 }
 
+/* base dos botões pequenos do carrinho */
 .carrinho-quantidade button,
 .carrinho-remover {
   border: 1px solid var(--cor-borda-forte);
@@ -1702,22 +1715,26 @@ form button {
   cursor: pointer;
 }
 
+/* botões − e ＋ */
 .carrinho-quantidade button {
   width: 36px;
   height: 36px;
 }
 
+/* botão "Remover" */
 .carrinho-remover {
   padding: 10px 13px;
   color: #bbb;
 }
 
+/* caixa do resumo do pedido */
 .carrinho-resumo {
   position: sticky;
   top: 110px;
   padding: 24px;
 }
 
+/* linha "Total exibido" com o valor */
 .carrinho-total-linha {
   display: flex;
   justify-content: space-between;
@@ -1725,12 +1742,14 @@ form button {
   margin: 24px 0;
 }
 
+/* rótulos de campos do resumo */
 .carrinho-resumo label {
   display: block;
   margin-bottom: 8px;
   color: #bbb;
 }
 
+/* listas de seleção do resumo */
 .carrinho-resumo select {
   width: 100%;
   padding: 13px;
@@ -1741,26 +1760,31 @@ form button {
   font: inherit;
 }
 
+/* botão de pagamento ocupa a largura toda */
 .carrinho-resumo .btn-provador {
   margin-top: 20px;
 }
 
+/* aviso pequeno (também usado para mensagens de erro de carregamento) */
 .carrinho-aviso {
   margin-top: 17px;
   font-size: 0.78rem;
   line-height: 1.5;
 }
 
+/* aviso de carrinho vazio */
 .carrinho-vazio {
   padding: 42px;
   text-align: center;
 }
 
+/* botão "Explorar a loja" do aviso */
 .carrinho-vazio a {
   display: inline-block;
   margin-top: 22px;
 }
 
+/* AJUSTES PARA TELAS DE ATÉ 760PX (celular/tablet): .carrinho-page, .carrinho-layout, .carrinho-item, .carrinho-item > img... */
 @media (max-width: 760px) {
   .carrinho-page {
     padding: 120px 16px 54px;
@@ -1785,106 +1809,5 @@ form button {
 
   .carrinho-resumo {
     position: static;
-  }
-}
-
-textarea {
-  width: 100%;
-  padding: 12px;
-  border: none;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--cor-texto);
-  font: inherit;
-  resize: vertical;
-}
-
-textarea:focus {
-  outline: none;
-  box-shadow: 0 0 10px var(--cor-marca);
-}
-
-.admin-form-card {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--raio-lg);
-  background: rgba(255, 255, 255, 0.045);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.admin-form-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.admin-form-grid label {
-  display: grid;
-  gap: 8px;
-  text-align: left;
-  color: #d7d2dd;
-}
-
-.admin-form-full {
-  grid-column: 1 / -1;
-}
-
-.admin-produto-item {
-  display: grid;
-  grid-template-columns: 78px 1fr auto;
-  align-items: center;
-  gap: 18px;
-  padding: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--raio-lg);
-  background: rgba(255, 255, 255, 0.045);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.25);
-}
-
-.admin-produto-item img {
-  width: 78px;
-  height: 78px;
-  border-radius: var(--raio);
-  object-fit: cover;
-  background: #1c1a1f;
-}
-
-.admin-produto-info p {
-  margin: 2px 0 0;
-  color: var(--cor-texto-suave);
-  font-size: 0.9rem;
-}
-
-.admin-produto-acoes {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  justify-content: flex-end;
-}
-
-.admin-produto-acoes button {
-  padding: 9px 14px;
-  font-size: 0.85rem;
-}
-
-.pedido-status.is-inativo {
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--cor-texto-suave);
-}
-
-@media (max-width: 700px) {
-  .admin-form-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-produto-item {
-    grid-template-columns: 64px 1fr;
-  }
-
-  .admin-produto-acoes {
-    grid-column: 1 / -1;
-    justify-content: flex-start;
   }
 }

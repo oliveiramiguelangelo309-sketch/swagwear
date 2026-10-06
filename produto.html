@@ -1,5 +1,10 @@
-
 <!DOCTYPE html>
+<!-- =============================================================================
+     produto.html — página de uma camiseta.
+     Abre com produto.html?produto=<id>; o JavaScript busca os dados em
+     /api/produtos/<id> e preenche foto, nome e preço. Daqui dá para comprar
+     direto ou adicionar ao carrinho, e há um carrossel com outras peças.
+     ============================================================================= -->
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
@@ -73,6 +78,7 @@
         <div class="tamanhos-lista">
           <!-- botões de tamanho -->
 
+          <!-- por enquanto os tamanhos são só visuais (a escolha não vai para o pedido) -->
           <button type="button" class="tamanho-btn">P</button>
           <!-- tamanho P -->
 
@@ -155,7 +161,8 @@
   </section>
 
   <script>
-    /* ================= DADOS DO PRODUTO ================= */ /* fazer o banco de dados dentro do vercel, sql pessoaas tem que fazer isso, julia garcia, matheus villa e gabriel */ 
+    /* ================= DADOS DO PRODUTO ================= */
+    /* anotação da equipe: fazer o banco de dados dentro do vercel, sql pessoaas tem que fazer isso, julia garcia, matheus villa e gabriel */
 
     const params = new URLSearchParams(window.location.search);
     /* pega tudo o que veio depois do ? na URL */
@@ -172,6 +179,7 @@
     let imagem = params.get("imagem");
     /* pega a imagem do produto */
 
+    /* partes da página que mostram nome, preço e foto */
     const produtoNome = document.getElementById("produtoNome");
     const produtoPreco = document.getElementById("produtoPreco");
     const produtoImagem = document.getElementById("produtoImagem");
@@ -182,6 +190,8 @@
       produtoPreco.textContent = preco ? `R$ ${preco}` : "R$ 0";
       produtoImagem.src = imagem || "";
 
+      /* O botão "Comprar agora" leva a peça direto para o pagamento.
+         encodeURIComponent protege espaços e acentos dentro do endereço. */
       btnComprar.href =
         `pagamento.html?produto=${encodeURIComponent(produtoId || "")}` +
         `&nome=${encodeURIComponent(nome || "Produto SwagWear")}` +
@@ -196,18 +206,21 @@
 
     /* Se houver id, consulta o backend sem remover a compatibilidade com URLs antigas. */
     async function carregarProdutoDoBanco() {
+      /* Sem id no endereço: usa só o nome/preço/imagem que vieram na URL (links antigos). */
       if (!produtoId) {
         atualizarProdutoNaPagina();
         return;
       }
 
       try {
+        /* Pergunta ao servidor os dados desta camiseta. */
         const resposta = await fetch(`/api/produtos/${encodeURIComponent(produtoId)}`);
 
         if (!resposta.ok) {
           throw new Error("Produto não encontrado.");
         }
 
+        /* Os dados do banco substituem os da URL. */
         const produtoDoBanco = await resposta.json();
         nome = produtoDoBanco.nome;
         preco = produtoDoBanco.preco;
@@ -220,6 +233,7 @@
     }
 
     carregarProdutoDoBanco();
+    /* busca o produto assim que a página abre */
 
     /* ================= VOCÊ TAMBÉM PODE CURTIR ================= */
 
@@ -232,11 +246,16 @@
         if (!resposta.ok) throw new Error("Não foi possível carregar outras peças.");
 
         const produtos = await resposta.json();
+        /* a camiseta aberta agora */
         const atual = produtos.find((produto) => String(produto.id) === String(produtoId));
+        /* todas as outras camisetas */
         const outros = produtos.filter((produto) => String(produto.id) !== String(produtoId));
+        /* primeiro as do mesmo drop... */
         const mesmoDrop = outros.filter((produto) => atual && produto.colecao === atual.colecao);
+        /* ...depois as dos outros drops */
         const restantes = outros.filter((produto) => !mesmoDrop.includes(produto));
 
+        /* Mostra no máximo 6 cards no carrossel. */
         [...mesmoDrop, ...restantes].slice(0, 6).forEach((produto) => {
           const card = document.createElement("div");
           card.className = "card";
@@ -249,6 +268,7 @@
               <a class="btn-card" href="produto.html?produto=${encodeURIComponent(produto.id)}">Ver mais</a>
             </div>`;
 
+          /* os dados entram com textContent/src (texto seguro, nunca vira HTML) */
           const imagemCard = card.querySelector("img");
           imagemCard.src = produto.imagem || "";
           imagemCard.alt = produto.nome || "Produto SwagWear";
@@ -257,6 +277,7 @@
           destino.appendChild(card);
         });
       } catch (error) {
+        /* se a API falhar, mostra o aviso no lugar dos cards */
         destino.innerHTML = `<p class="carrinho-aviso">${error.message}</p>`;
       }
     }
@@ -360,10 +381,11 @@
     }
   </script>
 
+<!-- menu de conta na barra de navegação -->
 <script src="account.js"></script>
+<!-- chat da assistente Swag -->
 <script src="swag-assistant.js"></script>
 </body>
 </html>
-
 
 

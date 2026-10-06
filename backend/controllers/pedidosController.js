@@ -1,20 +1,34 @@
-// Centraliza as consultas do pedido para que a rota continue pequena.
+// =============================================================================
+// controllers/pedidosController.js — pedidos e pagamentos demonstrativos.
+// -----------------------------------------------------------------------------
+// Cria pedidos a partir do carrinho, lista os pedidos do usuário e prepara os
+// pagamentos de mentira (PIX e boleto) usados na apresentação da FECIP.
+// Todos os valores em dinheiro são guardados em CENTAVOS (14900 = R$ 149,00),
+// para evitar erros de arredondamento com números quebrados.
+// =============================================================================
 const { run, get, all, transaction } = require('../database');
 const { gerarBoletoDemonstrativo } = require('../services/boletoService');
 const { gerarPixDemonstrativo } = require('../services/pixService');
 const { enviarEmailDemonstrativo } = require('../services/emailService');
 
+// Formas de pagamento aceitas. "cartao" é só uma simulação: o número nunca é enviado.
 const formasPagamento = ['cartao', 'pix', 'boleto'];
 
-// Cria um pedido usando somente ids e quantidades enviados pelo navegador.
+// -----------------------------------------------------------------------------
+// POST /api/pedidos — cria um pedido com os itens do carrinho.
+// O navegador manda só ids e quantidades; o preço é sempre lido do banco.
+// -----------------------------------------------------------------------------
 async function criarPedido(request, response) {
+  // Exemplo do corpo: { itens: [{ produto_id: 3, quantidade: 1 }], forma_pagamento: "pix" }
   const itensRecebidos = request.body.itens;
   const formaPagamento = String(request.body.forma_pagamento || '').toLowerCase();
 
+  // O carrinho precisa ter pelo menos um item.
   if (!Array.isArray(itensRecebidos) || itensRecebidos.length === 0) {
     return response.status(400).json({ mensagem: 'O pedido precisa possuir pelo menos um item.' });
   }
 
+  // Limite de segurança para ninguém mandar uma lista gigante.
   if (itensRecebidos.length > 50) {
     return response.status(400).json({ mensagem: 'O pedido possui itens demais.' });
   }
@@ -24,6 +38,7 @@ async function criarPedido(request, response) {
   }
 
   try {
+    // Lista dos itens já conferidos, com nome e preço vindos do banco.
     const itensValidados = [];
 
     // Consulta cada produto no banco; o preço recebido do frontend é completamente ignorado.
@@ -31,6 +46,7 @@ async function criarPedido(request, response) {
       const produtoId = Number(item.produto_id);
       const quantidade = Number(item.quantidade);
 
+      // id precisa ser inteiro positivo; quantidade entre 1 e 99.
       if (!Number.isInteger(produtoId) || produtoId <= 0 ||
           !Number.isInteger(quantidade) || quantidade <= 0 || quantidade > 99) {
         return response.status(400).json({ mensagem: 'Produto ou quantidade inválida.' });
@@ -45,21 +61,26 @@ async function criarPedido(request, response) {
         return response.status(404).json({ mensagem: `Produto ${produtoId} não encontrado.` });
       }
 
+      // 409 = conflito: não há peças suficientes em estoque.
       if (produto.estoque < quantidade) {
         return response.status(409).json({ mensagem: `Estoque insuficiente para ${produto.nome}.` });
       }
 
+      // Converte o preço para centavos (149.00 -> 14900). Math.round evita 14899.999...
       const precoUnitarioCentavos = Math.round(Number(produto.preco) * 100);
       itensValidados.push({ ...produto, quantidade, precoUnitarioCentavos });
     }
 
+    // Soma o total do pedido: preço x quantidade de cada item.
     const totalCentavos = itensValidados.reduce(
       (total, item) => total + item.precoUnitarioCentavos * item.quantidade,
       0
     );
 
-    // O adaptador garante uma transação adequada tanto no SQLite quanto no PostgreSQL.
+    // Transação: o pedido, os itens e a baixa de estoque são salvos juntos.
+    // Se qualquer passo falhar, nada fica gravado (o adaptador faz o ROLLBACK).
     const pedidoCriado = await transaction(async (database) => {
+      // 1) Cria o pedido com status "pendente" (ainda não pago).
       const pedido = await database.run(
         `INSERT INTO pedidos (usuario_id, status, metodo_pagamento, total_centavos)
          VALUES (?, 'pendente', ?, ?)`,
@@ -67,6 +88,7 @@ async function criarPedido(request, response) {
       );
 
       for (const item of itensValidados) {
+        // 2) Grava cada item do pedido com o preço do momento da compra.
         await database.run(
           `INSERT INTO itens_pedido
            (pedido_id, produto_id, quantidade, preco_unitario_centavos)
@@ -74,17 +96,20 @@ async function criarPedido(request, response) {
           [pedido.id, item.id, item.quantidade, item.precoUnitarioCentavos]
         );
 
-        // A condição de estoque também protege contra outra compra feita ao mesmo tempo.
+        // 3) Baixa o estoque. A condição "estoque >= ?" protege contra outra compra
+        // feita ao mesmo tempo: se o estoque acabou, nenhuma linha é alterada.
         const estoque = await database.run(
           'UPDATE produtos SET estoque = estoque - ? WHERE id = ? AND estoque >= ?',
           [item.quantidade, item.id, item.quantidade]
         );
 
+        // Nenhuma linha alterada = estoque insuficiente; o erro desfaz a transação.
         if (estoque.changes !== 1) {
           throw new Error('O estoque mudou durante a compra. Tente novamente.');
         }
       }
 
+      // Resumo do pedido que volta para o navegador (valores já em reais).
       return {
         id: pedido.id,
         status: 'pendente',
@@ -99,6 +124,7 @@ async function criarPedido(request, response) {
       };
     });
 
+    // 201 = criado com sucesso.
     return response.status(201).json({
       mensagem: 'Pedido criado com sucesso.',
       pedido: pedidoCriado
@@ -109,7 +135,10 @@ async function criarPedido(request, response) {
   }
 }
 
+// -----------------------------------------------------------------------------
+// GET /api/pedidos/meus — lista os pedidos de quem está logado (página Conta).
 // Lista somente os pedidos que pertencem ao usuário identificado pelo JWT.
+// -----------------------------------------------------------------------------
 async function listarMeusPedidos(request, response) {
   try {
     // O LEFT JOIN mantém o pedido visível mesmo se algum item antigo estiver ausente.
@@ -130,6 +159,7 @@ async function listarMeusPedidos(request, response) {
     const pedidosPorId = new Map();
 
     for (const linha of linhas) {
+      // Primeira vez que este pedido aparece: cria o "envelope" dele (sem itens ainda).
       if (!pedidosPorId.has(linha.pedido_id)) {
         pedidosPorId.set(linha.pedido_id, {
           id: linha.pedido_id,
@@ -141,6 +171,7 @@ async function listarMeusPedidos(request, response) {
         });
       }
 
+      // Se a linha tem um item, coloca esse item dentro do pedido certo.
       if (linha.item_id) {
         pedidosPorId.get(linha.pedido_id).itens.push({
           produto_id: linha.produto_id,
@@ -152,6 +183,7 @@ async function listarMeusPedidos(request, response) {
       }
     }
 
+    // Converte o Map em lista simples para enviar como JSON.
     return response.json({ pedidos: Array.from(pedidosPorId.values()) });
   } catch (error) {
     console.error('Erro ao listar pedidos:', error.message);
@@ -159,6 +191,9 @@ async function listarMeusPedidos(request, response) {
   }
 }
 
+// -----------------------------------------------------------------------------
+// PATCH /api/pedidos/:id/pagamento — marca o pedido como "pago" (simulação).
+// -----------------------------------------------------------------------------
 // Confirma um pagamento simulado para a apresentação da FECIP.
 // O WHERE inclui usuario_id: mesmo sabendo o número do pedido, outro usuário não pode alterá-lo.
 async function confirmarPagamentoSimulado(request, response) {
@@ -169,6 +204,7 @@ async function confirmarPagamentoSimulado(request, response) {
   }
 
   try {
+    // Só muda pedidos pendentes deste usuário; um pedido já pago não é alterado de novo.
     const resultado = await run(
       `UPDATE pedidos
        SET status = 'pago', atualizado_em = CURRENT_TIMESTAMP
@@ -191,11 +227,15 @@ async function confirmarPagamentoSimulado(request, response) {
   }
 }
 
+// -----------------------------------------------------------------------------
+// GET /api/pagamentos/pix — devolve a chave PIX de demonstração.
+// -----------------------------------------------------------------------------
 // Devolve a chave configurada somente ao usuário autenticado.
 // A chave fica no .env e não precisa ser escrita no HTML ou no Git.
 async function obterConfiguracaoPix(request, response) {
   const chavePix = String(process.env.PIX_KEY || '').trim();
 
+  // 503 = serviço indisponível: falta PIX_KEY no .env / na Vercel.
   if (!chavePix) {
     return response.status(503).json({ mensagem: 'A chave PIX demonstrativa não foi configurada.' });
   }
@@ -206,6 +246,9 @@ async function obterConfiguracaoPix(request, response) {
   });
 }
 
+// -----------------------------------------------------------------------------
+// POST /api/pedidos/:id/pix — monta o PIX de um pedido e (simula) enviar por email.
+// -----------------------------------------------------------------------------
 // Prepara o PIX e o email antes de o botão demonstrativo mudar o pedido para pago.
 async function prepararPixDoPedido(request, response) {
   const pedidoId = Number(request.params.id);
@@ -220,6 +263,8 @@ async function prepararPixDoPedido(request, response) {
   }
 
   try {
+    // Busca o pedido junto com nome e email do dono (JOIN com usuarios).
+    // "p.usuario_id = ?" garante que só o dono do pedido consegue gerar o PIX.
     const pedido = await get(
       `SELECT p.id, p.status, p.metodo_pagamento, p.total_centavos,
               u.nome AS usuario_nome, u.email AS usuario_email
@@ -229,10 +274,12 @@ async function prepararPixDoPedido(request, response) {
       [pedidoId, request.usuario.id]
     );
 
+    // Só faz sentido para pedidos pendentes que escolheram PIX.
     if (!pedido || pedido.status !== 'pendente' || pedido.metodo_pagamento !== 'pix') {
       return response.status(404).json({ mensagem: 'Pedido pendente por PIX não encontrado.' });
     }
 
+    // Monta os dados do PIX e "envia" o email (em modo mock, só registra no log).
     const pix = gerarPixDemonstrativo({
       pedidoId: pedido.id,
       nome: pedido.usuario_nome,
@@ -256,11 +303,16 @@ async function prepararPixDoPedido(request, response) {
     });
   } catch (error) {
     console.error('Erro ao preparar PIX demonstrativo:', error.message);
+    // Email mal configurado = 503 (serviço indisponível); qualquer outro erro = 500.
     const status = error.code === 'EMAIL_NAO_CONFIGURADO' ? 503 : 500;
     return response.status(status).json({ mensagem: error.message || 'Não foi possível preparar o PIX.' });
   }
 }
 
+// -----------------------------------------------------------------------------
+// POST /api/pedidos/:id/boleto — gera o boleto demonstrativo de um pedido.
+// Funciona igual ao PIX acima, mas para pedidos pagos por boleto.
+// -----------------------------------------------------------------------------
 // Gera o boleto somente depois de confirmar que pedido e email pertencem ao JWT.
 async function gerarBoletoDoPedido(request, response) {
   const pedidoId = Number(request.params.id);

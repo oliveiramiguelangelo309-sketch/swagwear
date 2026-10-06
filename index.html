@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <!-- diz ao navegador que este arquivo usa HTML5 -->
+<!-- =============================================================================
+     index.html — página inicial (Home) da SwagWear.
+     Tem a faixa de abertura com o botão "Explorar" e um carrossel com
+     camisetas em destaque, buscadas em /api/produtos.
+     ============================================================================= -->
 
 <html lang="pt-BR">
 <!-- começa o documento HTML e define o idioma como português do Brasil -->
@@ -9,6 +14,7 @@
   <!-- permite acentos e caracteres especiais -->
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+  <!-- carrega a fonte Montserrat (peso 800, bem grossa) do Google Fonts -->
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- faz o site se adaptar melhor a celular e tablet -->
@@ -149,18 +155,23 @@
     /* volta pra esquerda */
   }
 
+  /* ================= VITRINE DE DESTAQUES ================= */
+
+  /* texto pequeno do card: qual drop cada coleção representa */
   const dropPorColecao = {
     'Baby Tee': 'Drop 01',
     'Corporation': 'Drop 02'
   };
 
-  /* três peças de cada drop */
+  /* ids das camisetas que aparecem na home: três peças de cada drop */
   const idsDestaque = [1, 3, 4, 5, 7, 8];
 
+  /* formata o preço no padrão brasileiro: 149 -> "R$ 149" */
   function formatarPrecoDestaque(valor) {
     return `R$ ${Number(valor || 0).toLocaleString("pt-BR")}`;
   }
 
+  /* cria o card de uma camiseta (foto, drop, nome, preço e botão "Ver mais") */
   function criarCardDestaque(produto) {
     const card = document.createElement("div");
     card.className = "card";
@@ -173,6 +184,7 @@
         <a class="btn-card" href="produto.html?produto=${encodeURIComponent(produto.id)}">Ver mais</a>
       </div>`;
 
+    /* os dados entram com textContent/src, para nunca virarem código HTML */
     const imagem = card.querySelector("img");
     imagem.src = produto.imagem || "";
     imagem.alt = produto.nome || "Produto SwagWear";
@@ -182,27 +194,35 @@
     return card;
   }
 
+  /* busca as camisetas na API e coloca no carrossel só as de idsDestaque, nessa ordem */
   async function carregarDestaques() {
     try {
       const resposta = await fetch("/api/produtos");
       if (!resposta.ok) throw new Error("Não foi possível carregar os destaques.");
 
       const produtos = await resposta.json();
+
+      /* Map: id -> produto, para achar cada camiseta pelo id rapidinho */
       const porId = new Map(produtos.map((produto) => [produto.id, produto]));
 
       idsDestaque.forEach((id) => {
         const produto = porId.get(id);
+        /* se a camiseta não existir mais (ou estiver desativada), só pula */
         if (produto) carrossel.appendChild(criarCardDestaque(produto));
       });
     } catch (error) {
+      /* se a API falhar, mostra o aviso no lugar dos cards */
       carrossel.innerHTML = `<p class="carrinho-aviso">${error.message}</p>`;
     }
   }
 
   carregarDestaques();
+  /* carrega os destaques assim que a página abre */
 </script>
 
+<!-- menu de conta na barra de navegação -->
 <script src="account.js"></script>
+<!-- chat da assistente Swag -->
 <script src="swag-assistant.js"></script>
 </body>
 </html>

@@ -1,37 +1,57 @@
-// Carrega as variáveis do arquivo .env local antes dos outros módulos.
-// Esse arquivo é ignorado pelo Git e nunca deve conter dados enviados ao frontend.
+// =============================================================================
+// backend/server.js — o servidor da SwagWear (Express).
+// -----------------------------------------------------------------------------
+// Ele faz duas coisas:
+//   1. entrega as páginas do site (index.html, loja.html, style.css...);
+//   2. responde a API em /api/... (produtos, login, pedidos, assistente).
+// No computador ele é iniciado com "pnpm start". Na Vercel, quem o usa é o
+// arquivo api/index.js.
+// =============================================================================
+
+// Lê as variáveis do arquivo .env (senhas, chaves, URL do banco).
+// O .env nunca vai para o GitHub nem para o navegador.
 require('dotenv').config();
 
-// Carrega os módulos usados pelo servidor HTTP.
+// path monta caminhos de pastas; express é a biblioteca do servidor web.
 const path = require('node:path');
 const express = require('express');
 
-// Importa a função que garante a existência das tabelas antes de aceitar acessos.
+// checkDatabase confere/prepara o banco; databaseType diz qual banco está em uso.
 const { checkDatabase, databaseType } = require('./database');
 
-// As rotas ficam separadas para o server.js continuar pequeno e fácil de entender.
+// Cada grupo de rotas fica no seu próprio arquivo, para este continuar pequeno.
 const usuariosRoutes = require('./routes/usuarios');
 const produtosRoutes = require('./routes/produtos');
 const pedidosRoutes = require('./routes/pedidos');
 const assistenteRoutes = require('./routes/assistente');
 
-// Cria a aplicação Express e define a porta, permitindo uma configuração futura pelo ambiente.
+// Cria o aplicativo e escolhe a porta (PORT do .env ou 3000).
 const app = express();
 const port = Number(process.env.PORT) || 3000;
 
-// SQLite prepara as tabelas localmente; PostgreSQL apenas confirma a conexão.
-// Em produção, o schema PostgreSQL deve ser criado antes com `npm run migrate`.
+// Começa a preparar o banco assim que o servidor carrega.
+// No SQLite isso cria as tabelas; no PostgreSQL só confirma a conexão
+// (lá as tabelas são criadas antes, com "pnpm run migrate").
 const databaseReady = checkDatabase();
 
-// Aceita o próprio domínio da requisição, localhost e APP_ORIGIN configurada.
-// Isso evita liberar a API para qualquer site enquanto mantém frontend e API juntos.
+// -----------------------------------------------------------------------------
+// Controle de origem (CORS): só aceita chamadas à API vindas do próprio site,
+// do localhost ou dos endereços listados em APP_ORIGIN. Assim outro site
+// qualquer não consegue usar a nossa API pelo navegador dos visitantes.
+// -----------------------------------------------------------------------------
 app.use((request, response, next) => {
   const origin = request.headers.origin;
+
+  // Requisições sem "Origin" (abrir a página direto, curl...) seguem normalmente.
   if (!origin) return next();
 
+  // Descobre o endereço do próprio site. Na Vercel o protocolo (https) vem
+  // no cabeçalho x-forwarded-proto.
   const forwardedProtocol = request.headers['x-forwarded-proto'];
   const protocol = forwardedProtocol || request.protocol;
   const ownOrigin = `${protocol}://${request.get('host')}`;
+
+  // APP_ORIGIN pode ter vários endereços separados por vírgula.
   const configuredOrigins = String(process.env.APP_ORIGIN || '')
     .split(',')
     .map((value) => value.trim())
@@ -43,17 +63,20 @@ app.use((request, response, next) => {
     return response.status(403).json({ mensagem: 'Origem não permitida.' });
   }
 
+  // Avisa ao navegador que esta origem pode usar a API e com quais cabeçalhos/métodos.
   response.setHeader('Access-Control-Allow-Origin', origin);
   response.setHeader('Vary', 'Origin');
   response.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  // PATCH é usado somente pela troca autenticada de senha.
+  // PATCH é usado na troca de senha e na confirmação do pagamento simulado.
   response.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
 
+  // OPTIONS é a "pergunta prévia" do navegador; responde que está tudo certo.
   if (request.method === 'OPTIONS') return response.sendStatus(204);
   return next();
 });
 
-// Nenhuma rota acessa o banco antes da conexão/migration terminar.
+// Nenhuma rota usa o banco antes de ele estar pronto.
+// Se o banco estiver fora do ar, responde 503 ("serviço indisponível").
 app.use(async (request, response, next) => {
   try {
     await databaseReady;
@@ -64,13 +87,13 @@ app.use(async (request, response, next) => {
   }
 });
 
-// Permite que futuras rotas recebam objetos JSON no corpo das requisições.
+// Permite ler o corpo das requisições em JSON (ex.: { "email": "...", "senha": "..." }).
 app.use(express.json());
 
-// Disponibiliza o frontend existente sem alterar seus arquivos ou seu design.
+// Entrega os arquivos do site (HTML, CSS, imagens) que estão na pasta principal.
 app.use(express.static(path.join(__dirname, '..')));
 
-// Rota simples para confirmar que o backend está funcionando.
+// GET /api/status — rota simples para conferir se o backend está no ar.
 app.get('/api/status', (request, response) => {
   response.json({
     nome: 'SwagWear API',
@@ -78,13 +101,14 @@ app.get('/api/status', (request, response) => {
   });
 });
 
-// Adiciona /api antes das rotas: por exemplo, /cadastro vira /api/cadastro.
+// Liga as rotas com o prefixo /api: por exemplo, /cadastro vira /api/cadastro.
 app.use('/api', usuariosRoutes);
 app.use('/api', produtosRoutes);
 app.use('/api', pedidosRoutes);
 app.use('/api', assistenteRoutes);
 
-// Trata erros conhecidos sem mostrar detalhes internos ao navegador.
+// Tratador final de erros: registra no log e responde sem expor detalhes internos.
+// (O Express reconhece este tipo de função por ela ter 4 parâmetros.)
 app.use((error, request, response, next) => {
   if (error) {
     console.error('Erro tratado pelo servidor:', error.message);
@@ -94,7 +118,7 @@ app.use((error, request, response, next) => {
   return next();
 });
 
-// Primeiro prepara o banco; somente depois começa a escutar requisições.
+// Espera o banco ficar pronto e só então começa a aceitar visitas.
 async function startServer() {
   try {
     await databaseReady;
@@ -108,8 +132,8 @@ async function startServer() {
   }
 }
 
-// Executa o listener somente quando este arquivo é iniciado diretamente no computador.
-// Quando o Vercel importa o app, ele gerencia a porta e não cria outro servidor.
+// Só abre a porta quando este arquivo é executado diretamente (pnpm start).
+// Na Vercel, o api/index.js apenas importa o "app" e a Vercel cuida da porta.
 if (require.main === module) {
   startServer();
 }
