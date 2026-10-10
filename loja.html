@@ -30,15 +30,18 @@
     </nav>
   </header>
 
-  <!-- faixa de abertura da loja -->
+  <!-- faixa de abertura da loja: banner "Coleções SwagWear Corporation" -->
   <section class="hero-loja">
-    <div class="overlay-loja">
-      <p class="mini-tag">STREETWEAR CONTEMPORÂNEO</p>
-      <h1>COLEÇÕES SWAGWEAR</h1>
-      <p class="sub-loja">
-        Dois drops. Duas vibes. Um só estilo: atitude.
-      </p>
-    </div>
+    <!-- o título já está desenhado no banner; este h1 fica escondido na tela,
+         mas continua sendo lido por leitores de tela e pelo Google -->
+    <h1 class="texto-escondido">Coleções SwagWear</h1>
+
+    <img class="banner-loja" src="assets/colecoes-swagwear.jpg" alt="Coleções SwagWear Corporation: camisetas brancas estampadas sobre fundo azul com respingos de tinta">
+
+    <!-- frase abaixo do banner -->
+    <p class="sub-loja">
+      Camisetas com estampas exclusivas, em dois drops.
+    </p>
   </section>
 
   <!-- aqui o JavaScript coloca uma seção para cada drop, com seus cards -->
@@ -54,7 +57,7 @@
 
     /* O nome do drop vem do banco (coluna "colecao"); aqui ficam a etiqueta e a descrição. */
     const colecoesInfo = {
-      'Baby Tee': { tag: 'DROP 01', texto: 'Baby tees de corte ajustado, com estampas coloridas e cheias de atitude.' },
+      'Baby Tee': { tag: 'DROP 01', texto: 'Baby tees de corte ajustado, com estampas coloridas.' },
       'Corporation': { tag: 'DROP 02', texto: 'Camisetas de corte reto da linha SwagWear Corporation, das básicas às estampadas.' }
     };
 
