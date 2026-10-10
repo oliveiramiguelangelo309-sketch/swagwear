@@ -411,21 +411,26 @@ form button {
    LOJA — faixa de abertura e seções dos drops (loja.html)
    ============================================================================= */
 
-/* faixa do topo da loja: espaço da navbar fixa + banner + frase */
+/* faixa do topo da loja: espaço da navbar fixa + banner centralizado */
 .hero-loja {
-  padding-top: 80px;
+  padding: 104px 24px 0;
   text-align: center;
-  background: var(--cor-fundo);
+  background:
+    radial-gradient(ellipse at top, rgba(123, 47, 255, 0.18), transparent 60%),
+    var(--cor-fundo);
 }
 
-/* banner "Coleções SwagWear": ocupa a largura toda sem distorcer;
-   max-height evita que ele tome a tela inteira em monitores muito largos */
+/* banner "Coleções SwagWear": aparece inteiro (sem cortar), centralizado,
+   com cantos arredondados e sombra; a largura máxima é a da própria imagem
+   (1500px), para ela nunca ser esticada e ficar borrada */
 .banner-loja {
   display: block;
   width: 100%;
+  max-width: 1500px;
   height: auto;
-  max-height: 80vh;
-  object-fit: cover;
+  margin: 0 auto;
+  border-radius: var(--raio-xl);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--cor-borda);
 }
 
 /* esconde um texto da tela, mas mantém para leitores de tela e buscadores */
@@ -438,19 +443,16 @@ form button {
   white-space: nowrap;
 }
 
-/* frase abaixo do banner */
-.sub-loja {
-  color: var(--cor-texto-suave);
-  font-size: 1.1rem;
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 28px 20px 10px;
-}
-
 /* seção de cada drop, com uma linha separando do drop anterior */
 .colecao {
   padding: 90px 20px;
   border-top: 1px solid var(--cor-borda);
+}
+
+/* o primeiro drop vem logo depois do banner: sem linha em cima */
+#colecoesLoja .colecao:first-child {
+  border-top: none;
+  padding-top: 70px;
 }
 
 /* cabeçalho centralizado do drop */
@@ -613,8 +615,16 @@ form button {
   }
 }
 
-/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .colecao-topo h2, .grid-loja, .btn-topo */
+/* AJUSTES PARA TELAS DE ATÉ 768PX (celular/tablet): .hero-loja, .banner-loja, .colecao-topo h2, .grid-loja... */
 @media (max-width: 768px) {
+  .hero-loja {
+    padding: 84px 12px 0;
+  }
+
+  .banner-loja {
+    border-radius: var(--raio);
+  }
+
   .colecao-topo h2 {
     font-size: 2rem;
   }
