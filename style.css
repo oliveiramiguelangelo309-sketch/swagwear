@@ -156,7 +156,7 @@ button:hover {
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  padding-bottom: 12vh;
+  padding-bottom: 22vh; /* põe o botão logo abaixo do logo, no meio da parte de baixo da foto */
   text-align: center;
   background: #124179 url("assets/home-swagwear.png") no-repeat center / contain;
 }
@@ -172,15 +172,7 @@ button:hover {
   margin-bottom: 20px;
 }
 
-/* frase da home: começa invisível e aparece com a animação */
-.hero p {
-  opacity: 0;
-  transform: translateY(30px);
-  animation: aparecer 1s ease forwards;
-  animation-delay: 0.3s;
-}
-
-/* botão "Explorar": aparece um pouco depois da frase */
+/* botão "Explorar": aparece com a animação, logo depois de a página abrir */
 .hero button {
   opacity: 0;
   animation: aparecer 1s ease forwards;
