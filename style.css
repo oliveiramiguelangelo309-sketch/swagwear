@@ -146,19 +146,19 @@ button:hover {
    HOME — faixa de abertura com a imagem de fundo
    ============================================================================= */
 
-/* ocupa a tela inteira, centraliza o conteúdo e usa imagem.png escurecida de fundo */
+/* ocupa a tela inteira com o banner "SWAG WEAR Corporation"; a frase e o botão
+   ficam embaixo, para não cobrir o logo. "contain" mostra a imagem inteira em
+   qualquer tela, e o azul #124179 (a cor da borda da imagem) completa o resto */
 .hero {
-  height: 100vh;
+  height: calc(100vh - 80px); /* tela inteira menos a navbar, para o botão não sair da tela */
   margin-top: 80px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
+  padding-bottom: 12vh;
   text-align: center;
-  background:
-    linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url("imagem.png") no-repeat center;
-  background-size: cover;
+  background: #124179 url("assets/home-swagwear.png") no-repeat center / contain;
 }
 
 /* título gigante "SWAGWEAR" com a fonte Montserrat */
