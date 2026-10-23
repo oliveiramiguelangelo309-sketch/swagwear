@@ -150,8 +150,8 @@
     /* ================= ABA CARRINHO ================= */
 
     function renderizarCarrinho() {
-      /* Lê exatamente a mesma chave usada por carrinho.html. */
-      const carrinho = JSON.parse(localStorage.getItem("carrinho") || "[]");
+      /* Mesmo carrinho de carrinho.html: só o desta conta. */
+      const carrinho = window.SwagWearAccount.lerCarrinho();
       const destino = document.getElementById("contaCarrinho");
       if (!carrinho.length) {
         destino.innerHTML = '<div class="conta-empty">Seu carrinho está vazio.</div>';

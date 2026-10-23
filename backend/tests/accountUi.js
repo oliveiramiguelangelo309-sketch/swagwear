@@ -81,9 +81,9 @@ async function executar() {
   confirmar(await pagina.locator('.account-dropdown a[href="conta.html#rastreio"]').isVisible(), "Atalho de rastreio ausente.");
 
   // Confere o PIX acadêmico: chave carregada, email mock e pedido realmente pago.
-  await pagina.evaluate((produtoId) => {
-    localStorage.setItem("carrinho", JSON.stringify([{ produto_id: produtoId, nome: "Produto visual", preco: 99.9, imagem: "teste.png", quantidade: 1 }]));
-  }, produtoTesteId);
+  await pagina.evaluate(([produtoId, idUsuario]) => {
+    localStorage.setItem(`carrinho_${idUsuario}`, JSON.stringify([{ produto_id: produtoId, nome: "Produto visual", preco: 99.9, imagem: "teste.png", quantidade: 1 }]));
+  }, [produtoTesteId, usuarioId]);
   await pagina.goto(`${base}/pagamento.html`);
   confirmar((await pagina.locator("#compradorEmail").textContent()).includes(email), "O pagamento não identificou o comprador.");
   await pagina.waitForFunction(() => document.querySelector("#chavePix")?.textContent !== "Carregando...");

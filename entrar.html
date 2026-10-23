@@ -110,6 +110,8 @@
              O account.js lê estes dois itens para mostrar o nome na barra de navegação. */
           localStorage.setItem("swagwear_token", resultado.token);
           localStorage.setItem("swagwear_usuario", JSON.stringify(resultado.usuario));
+          /* o que foi escolhido antes de entrar passa para o carrinho desta conta */
+          window.SwagWearAccount.juntarCarrinhoVisitante();
           const primeiroNome = window.SwagWearAccount.primeiroNome(resultado.usuario.nome);
 
           /* Mensagem de sucesso em verde. O nome entra com textContent,

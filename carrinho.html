@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- =============================================================================
      carrinho.html — página do carrinho de compras.
-     O carrinho fica salvo no navegador (localStorage, chave "carrinho").
+     O carrinho fica salvo no navegador, separado por conta (veja account.js).
      Aqui dá para mudar quantidades, remover peças e seguir para o pagamento.
      ============================================================================= -->
 <html lang="pt-BR">
@@ -64,12 +64,14 @@
     </div>
   </main>
 
+  <!-- menu de conta; vem antes do script abaixo porque ele usa SwagWearAccount ao abrir -->
+  <script src="account.js"></script>
   <script>
     /* ================= DADOS DO CARRINHO ================= */
 
-    /* Lê o carrinho salvo no navegador. Cada item tem: produto_id, nome, preco, imagem e quantidade.
-       Se ainda não houver carrinho, começa com uma lista vazia. */
-    let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
+    /* Lê o carrinho da conta logada (ou do visitante), pelo account.js.
+       Cada item tem: produto_id, nome, preco, imagem e quantidade. */
+    let carrinho = window.SwagWearAccount.lerCarrinho();
 
     /* Partes da página que o script atualiza. */
     const listaCarrinho = document.getElementById("listaCarrinho");
@@ -78,7 +80,7 @@
 
     /* Salva o carrinho no navegador e redesenha a lista. */
     function salvarCarrinho() {
-      localStorage.setItem("carrinho", JSON.stringify(carrinho));
+      window.SwagWearAccount.salvarCarrinho(carrinho);
       renderizarCarrinho();
     }
 
@@ -190,8 +192,6 @@
     /* Desenha o carrinho assim que a página abre. */
     renderizarCarrinho();
   </script>
-<!-- menu de conta na barra de navegação -->
-<script src="account.js"></script>
 <!-- chat da assistente Swag -->
 <script src="swag-assistant.js"></script>
 </body>

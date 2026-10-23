@@ -33,10 +33,55 @@
     }
   }
 
-  /* Sai da conta: apaga os dois dados do login e volta para a Home. */
+  /* ================= CARRINHO SEPARADO POR CONTA ================= */
+  /* Cada conta tem o próprio carrinho ("carrinho_<id>"); quem não está logado usa
+     "carrinho_visitante". Antes era uma chave só ("carrinho") para todo mundo, e o
+     carrinho de um cliente aparecia na conta do próximo que entrasse no mesmo navegador. */
+  function chaveCarrinho() {
+    const sessao = obterSessao();
+    return sessao ? `carrinho_${sessao.usuario.id}` : "carrinho_visitante";
+  }
+
+  function lerCarrinho(chave = chaveCarrinho()) {
+    try {
+      const itens = JSON.parse(localStorage.getItem(chave));
+      return Array.isArray(itens) ? itens : [];
+    } catch (error) {
+      return []; /* valor corrompido vira carrinho vazio */
+    }
+  }
+
+  function salvarCarrinho(itens) {
+    localStorage.setItem(chaveCarrinho(), JSON.stringify(itens));
+  }
+
+  function limparCarrinho() {
+    localStorage.removeItem(chaveCarrinho());
+  }
+
+  /* Chamado logo depois do login: o que a pessoa escolheu antes de entrar
+     (carrinho de visitante) passa para o carrinho da conta dela. */
+  function juntarCarrinhoVisitante() {
+    const visitante = lerCarrinho("carrinho_visitante");
+    const daConta = lerCarrinho();
+    visitante.forEach(function (item) {
+      const igual = daConta.find(function (outro) { return outro.produto_id === item.produto_id; });
+      if (igual) igual.quantidade += item.quantidade;
+      else daConta.push(item);
+    });
+    salvarCarrinho(daConta);
+    localStorage.removeItem("carrinho_visitante");
+  }
+
+  /* A chave antiga "carrinho" pode ter itens de outro cliente: é apagada e não é reaproveitada. */
+  localStorage.removeItem("carrinho");
+
+  /* Sai da conta: apaga os dados do login e a conversa da Swag (que pode ter dados da
+     pessoa) e volta para a Home. O carrinho da conta fica guardado só para ela. */
   function sair() {
     localStorage.removeItem(CHAVE_TOKEN);
     localStorage.removeItem(CHAVE_USUARIO);
+    sessionStorage.removeItem("swagwear_swag_historico");
     window.location.href = "index.html";
   }
 
@@ -195,7 +240,10 @@
 
   /* Deixa estas funções disponíveis para outras páginas (ex.: conta.html, carrinho.html)
      sem elas precisarem conhecer as chaves internas do localStorage. */
-  window.SwagWearAccount = { obterSessao, sair, atualizarNavbar, primeiroNome };
+  window.SwagWearAccount = {
+    obterSessao, sair, atualizarNavbar, primeiroNome,
+    lerCarrinho, salvarCarrinho, limparCarrinho, juntarCarrinhoVisitante
+  };
 
   /* Monta a barra assim que o HTML terminar de carregar (ou na hora, se já carregou). */
   if (document.readyState === "loading") {

@@ -303,9 +303,9 @@
       };
       /* cria um objeto com os dados do produto atual */
 
-      let carrinho = JSON.parse(localStorage.getItem("carrinho")) || [];
-      /* tenta pegar o carrinho salvo no navegador
-         se não existir nada, usa um array vazio */
+      let carrinho = window.SwagWearAccount.lerCarrinho();
+      /* pega o carrinho da conta logada (ou do visitante)
+         e começa vazio se não houver nada */
 
       const produtoExistente = carrinho.find(item =>
         produto.produto_id
@@ -322,8 +322,8 @@
         /* se não existir, adiciona o produto ao carrinho */
       }
 
-      localStorage.setItem("carrinho", JSON.stringify(carrinho));
-      /* salva o carrinho atualizado no navegador */
+      window.SwagWearAccount.salvarCarrinho(carrinho);
+      /* salva o carrinho atualizado, só para esta conta */
 
       alert("Produto adicionado ao carrinho!");
       /* mostra um aviso simples confirmando */

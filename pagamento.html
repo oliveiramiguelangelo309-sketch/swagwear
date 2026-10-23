@@ -98,7 +98,7 @@
        O preço daqui é só para exibir; o servidor recalcula o valor real pelo banco. */
     const itensVisuais = compraDireta
       ? [{ produto_id: produtoDiretoId, nome: parametros.get("nome") || "Produto SwagWear", preco: Number(String(parametros.get("preco") || "0").replace(",", ".")), imagem: parametros.get("imagem") || "", quantidade: 1 }]
-      : JSON.parse(localStorage.getItem("carrinho") || "[]");
+      : window.SwagWearAccount.lerCarrinho();
 
     let chavePixAtual = ""; /* chave PIX de demonstração vinda do servidor */
 
@@ -193,7 +193,7 @@
 
     /* Esvazia o carrinho depois da compra. Na compra direta o carrinho não foi usado, então fica como está. */
     function limparCarrinho() {
-      if (!compraDireta) localStorage.removeItem("carrinho");
+      if (!compraDireta) window.SwagWearAccount.limparCarrinho();
     }
 
     /* ================= BOTÃO "CONFIRMAR PAGAMENTO PIX" ================= */
