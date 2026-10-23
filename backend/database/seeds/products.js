@@ -113,5 +113,70 @@ module.exports = [
     cor: 'preto',
     colecao: DROP_02,
     arquivo: 'basic-preta-tee.webp'
+  }),
+  // Versões de corte reto (masculinas). Ids a partir de 26 porque 11 a 25 já são
+  // peças antigas desativadas no banco, que pedidos antigos ainda usam.
+  camiseta({
+    id: 26,
+    nome: 'Tee Pincelada',
+    preco: 139.0,
+    descricao: 'Camiseta branca de corte reto com a frase "Art Is My Life" pintada em aquarela colorida.',
+    cor: 'branco',
+    colecao: DROP_02,
+    arquivo: 'art-is-my-life-tee.webp'
+  }),
+  camiseta({
+    id: 27,
+    nome: 'Tee Cavalos Selvagens',
+    preco: 139.0,
+    descricao: 'Camiseta branca de corte reto com três cavalos em verde, vermelho e azul com efeito desgastado.',
+    cor: 'branco',
+    colecao: DROP_02,
+    arquivo: 'wild-horses-tee.webp'
+  }),
+  camiseta({
+    id: 28,
+    nome: 'Tee Gatos Neon',
+    preco: 129.0,
+    descricao: 'Camiseta branca com seis gatinhos de chapéu em traço neon verde, amarelo, rosa, vermelho, azul e roxo.',
+    cor: 'branco',
+    colecao: DROP_02,
+    arquivo: 'gatos-neon-tee.webp'
+  }),
+  camiseta({
+    id: 29,
+    nome: 'Tee Bala Rosa',
+    preco: 149.0,
+    descricao: 'Camiseta branca de corte reto com o logo SwagWear Corporation em rosa, estrela amarela e marcas de tiro.',
+    cor: 'branco',
+    colecao: DROP_02,
+    arquivo: 'swag-logo-tee.webp'
+  }),
+  camiseta({
+    id: 30,
+    nome: 'Tee Estrelas Gêmeas',
+    preco: 149.0,
+    descricao: 'Camiseta branca de corte reto com duas silhuetas sobre estrelas rosa com efeito rachado.',
+    cor: 'branco',
+    colecao: DROP_02,
+    arquivo: 'star-girls-tee.webp'
+  }),
+  camiseta({
+    id: 31,
+    nome: 'Tee Swag 2026 Brasil',
+    preco: 149.0,
+    descricao: 'Camiseta branca com "Swag 2026 Wear" em letra gótica, bandeira do Brasil e "Based in B.R.L".',
+    cor: 'branco',
+    colecao: DROP_02,
+    arquivo: 'swag-2026-brasil-tee.webp'
+  }),
+  camiseta({
+    id: 32,
+    nome: 'Tee Estrela Swag',
+    preco: 149.0,
+    descricao: 'Camiseta branca com "Swag Wear" em azul e amarelo ao redor de uma estrela rosa com rostos.',
+    cor: 'branco',
+    colecao: DROP_02,
+    arquivo: 'estrela-swag-tee.webp'
   })
 ];
