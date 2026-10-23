@@ -192,6 +192,7 @@
     dropdown.className = "account-dropdown";
     dropdown.append(
       criarLink("Minha conta", "conta.html#perfil"),
+      criarLink("Carrinho", "carrinho.html"),
       criarLink("Meus pedidos", "conta.html#pedidos"),
       criarLink("Pedidos confirmados", "conta.html#confirmados"),
       criarLink("Rastreio", "conta.html#rastreio"),
